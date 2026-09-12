@@ -2,7 +2,7 @@
 
 > Parent: [../INDEX.md](../INDEX.md)
 > Children: [foundations](./foundations/main.md), [visualization-and-assessment](./visualization-and-assessment/main.md)
-> Last audited: 2026-09-12 @ commit `ce73307`
+> Last audited: 2026-09-12 @ commit `96aaf65` plus working-tree notebook `Novoa/iir_gnuradio_filter.ipynb`
 
 ## Purpose
 Deliver an eight-notebook Pre-M0 learning sequence that closes foundational Python and NumPy gaps using familiar in-memory IQ signals.
@@ -26,11 +26,21 @@ notebooks/
 ├── pre_m0_7_joint_iq_power_and_complex_magnitude.ipynb
 ├── pre_m0_8_iq_axes_power_and_capstone_check.ipynb
 └── pre_m0_generation_report.json    # Machine-readable generation inventory
+
+Novoa/
+├── iir_gnuradio_filter.ipynb           # GNU Radio IIR filter exercise for complex IQ data
+├── iir_plain_instructions_to_code.ipynb # Natural-language instructions to SciPy code
+├── iir_pseudocode_to_code.ipynb         # Pseudocode to SciPy code translation
+├── filtered_iq.npz                      # Output from the direct-instructions notebook
+└── filtered_iq_from_pseudocode.npz      # Output from the pseudocode notebook
 ```
 
 ## Entry points
 - `notebooks/pre_m0_1_python_functions_for_iq.ipynb` -> begin the sequential curriculum.
 - `notebooks/pre_m0_generation_report.json` -> inspect titles, focuses, cell counts, gates, and restrictions.
+- `Novoa/iir_gnuradio_filter.ipynb` -> run the GNU Radio IIR IQ filtering exercise.
+- `Novoa/iir_plain_instructions_to_code.ipynb` -> run the direct SciPy IIR exercise with plots and NPZ output.
+- `Novoa/iir_pseudocode_to_code.ipynb` -> read the algorithm conventions and run its Python translation.
 
 ## Key interactions
 - **Generation prompt -> notebooks:** `prompts/create-nbs.md` defines exact filenames and learning scope.
@@ -42,6 +52,8 @@ notebooks/
 - Use `np.mean(I**2 + Q**2)` and `np.mean(np.abs(I + 1j*Q)**2)` as equivalent power calculations.
 - Notebook 5 creates a temporary `demo_iq.npz` while demonstrating safe loading.
 - PC-1 remains intentionally manual; an automated run alone cannot certify the learner explanation.
+- GNU Radio execution requires the system dependency and a `--system-site-packages` virtual environment described in `AGENTS.md`.
+- IIR notebooks use `scipy.signal.lfilter` along axis 2 and compare mean IQ power before and after filtering.
 
 ## Open questions / TODO
 - Add an explicit environment or requirements file for notebook dependencies.
