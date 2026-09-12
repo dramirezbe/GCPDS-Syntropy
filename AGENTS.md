@@ -1,5 +1,21 @@
 # AGENTS.md
 
+## Scaffold Exploration Protocol
+
+Before inspecting implementation details, read the documentation scaffold in this order:
+
+1. `scaffold/INDEX.md` for the repository map.
+2. The relevant `scaffold/<section>/main.md` for a section overview.
+3. The relevant `scaffold/<section>/<sub-section>/main.md` when deeper detail exists.
+
+Only then inspect source notebooks, prompts, or project files. If source and scaffold disagree, trust the source and update the affected scaffold documents plus `scaffold/_meta/manifest.json`.
+
+| Section | Purpose | Documentation |
+| --- | --- | --- |
+| Notebooks | Pre-M0 Python/NumPy curriculum using IQ data | [scaffold/notebooks/main.md](scaffold/notebooks/main.md) |
+| Prompts | Reusable notebook, IIR, and workflow instructions | [scaffold/prompts/main.md](scaffold/prompts/main.md) |
+| Project guidance | Agent rules, skills, task backlog, and registries | [scaffold/project-guidance/main.md](scaffold/project-guidance/main.md) |
+
 ## Python and GNU Radio Environment
 
 Before running Python code that depends on GNU Radio, ensure the system has `python3-venv` installed.
