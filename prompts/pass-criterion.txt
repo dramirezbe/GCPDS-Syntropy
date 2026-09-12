@@ -1,0 +1,2 @@
+Pass criterion: Students independently explain array axes and correct an injected axis swap. Power
+agrees with a direct complex-magnitude calculation.

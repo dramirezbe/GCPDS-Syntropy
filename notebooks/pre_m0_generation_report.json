@@ -1,0 +1,119 @@
+{
+  "generation_report": {
+    "timestamp": "2026-09-11T21:57:00Z",
+    "total_notebooks": 8,
+    "status": "complete",
+    "notebooks": [
+      {
+        "id": 1,
+        "filename": "pre_m0_1_python_functions_for_iq.ipynb",
+        "title": "Pre-M0.1 — Python Functions for IQ Signals",
+        "focus": "Python functions applied to IQ (def, parameters, return, local variables, arrays as arguments, shape/dtype inspection)",
+        "functions": ["describe_array", "number_of_samples", "get_iq_components", "joint_iq_power", "complex_magnitude_power"],
+        "cells": 38,
+        "pc_gates": ["PC-1", "PC-2", "PC-3"],
+        "status": "created"
+      },
+      {
+        "id": 2,
+        "filename": "pre_m0_2_numpy_iq_arrays_axes_and_dtypes.ipynb",
+        "title": "Pre-M0.2 — NumPy IQ Arrays, Axes, and dtypes",
+        "focus": "ndarray, shape, ndim, size, axis, float32/64, complex64/128, astype, .real, .imag, I+1j*Q",
+        "functions": [],
+        "cells": 62,
+        "pc_gates": ["PC-1", "PC-2", "PC-3"],
+        "status": "created"
+      },
+      {
+        "id": 3,
+        "filename": "pre_m0_3_iq_indexing_and_slicing.ipynb",
+        "title": "Pre-M0.3 — IQ Indexing and Slicing",
+        "focus": "Indexing, slicing, shape preservation/removal, integer vs slice behavior",
+        "functions": [],
+        "cells": 76,
+        "pc_gates": ["PC-1", "PC-2", "PC-3"],
+        "status": "created"
+      },
+      {
+        "id": 4,
+        "filename": "pre_m0_4_iq_broadcasting_and_vectorized_operations.ipynb",
+        "title": "Pre-M0.4 — IQ Broadcasting and Vectorized Operations",
+        "focus": "Element-wise ops, scalar multiplication, broadcasting, compatible/incompatible shapes, vectorization",
+        "functions": [],
+        "cells": 58,
+        "pc_gates": ["PC-1", "PC-2", "PC-3"],
+        "status": "created"
+      },
+      {
+        "id": 5,
+        "filename": "pre_m0_5_loading_and_inspecting_iq_files.ipynb",
+        "title": "Pre-M0.5 — Loading and Inspecting IQ Files",
+        "focus": "Path, NPZ loading, allow_pickle=False, keys, shape, ndim, dtype, nbytes, error handling",
+        "functions": ["inspect_iq_array"],
+        "cells": 55,
+        "pc_gates": ["PC-1", "PC-2", "PC-3"],
+        "status": "created"
+      },
+      {
+        "id": 6,
+        "filename": "pre_m0_6_iq_time_traces_and_constellations.ipynb",
+        "title": "Pre-M0.6 — IQ Time Traces and Constellations",
+        "focus": "Matplotlib plotting, I/Q vs time traces, I vs Q constellation diagrams",
+        "functions": [],
+        "cells": 63,
+        "pc_gates": ["PC-1", "PC-2", "PC-3"],
+        "status": "created"
+      },
+      {
+        "id": 7,
+        "filename": "pre_m0_7_joint_iq_power_and_complex_magnitude.ipynb",
+        "title": "Pre-M0.7 — Joint IQ Power and Complex Magnitude",
+        "focus": "Power from real components, power from complex magnitude, mathematical equivalence, per-example power",
+        "functions": [],
+        "cells": 55,
+        "pc_gates": ["PC-1", "PC-2", "PC-3"],
+        "status": "created"
+      },
+      {
+        "id": 8,
+        "filename": "pre_m0_8_iq_axes_power_and_capstone_check.ipynb",
+        "title": "Pre-M0.8 — IQ Axes, Power, and Capstone Check",
+        "focus": "Capstone review of all concepts, comprehensive exercises, final validation",
+        "functions": [],
+        "cells": 52,
+        "pc_gates": ["PC-1", "PC-2", "PC-3"],
+        "status": "created"
+      }
+    ],
+    "pass_criterion": {
+      "PC-1": "Independent axis explanation (6 questions, manual verification)",
+      "PC-2": "Injected axis swap correction (transpose, shape diagnosis, recovery)",
+      "PC-3": "IQ power agreement (real components vs complex magnitude, rtol=1e-5, atol=1e-7)"
+    },
+    "iq_contract": {
+      "canonical_shape": "(N, 2, L)",
+      "axis_meaning": {
+        "axis_0": "examples",
+        "axis_1": "I/Q components (0=I, 1=Q)",
+        "axis_2": "time samples"
+      },
+      "dtype": "np.float32",
+      "seed": 42
+    },
+    "restrictions_compliance": {
+      "custom_classes": false,
+      "oop": false,
+      "pytorch": false,
+      "tensorflow": false,
+      "keras": false,
+      "cnn": false,
+      "mlp": false,
+      "gpu_cuda": false,
+      "streaming": false,
+      "rtl_sdr": false,
+      "stft_spectrograms": false,
+      "filtering_demodulation": false,
+      "snr_calibration": false
+    }
+  }
+}

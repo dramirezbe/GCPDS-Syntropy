@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ScaffoldManifest",
+  "type": "object",
+  "required": ["generated_at", "commit", "sections"],
+  "properties": {
+    "generated_at": { "type": "string", "format": "date-time" },
+    "commit": { "type": "string" },
+    "sections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "layer", "parent", "children", "purpose", "last_audited_commit"],
+        "properties": {
+          "path": { "type": "string" },
+          "layer": { "type": "integer", "minimum": 0, "maximum": 2 },
+          "parent": { "type": "string" },
+          "children": { "type": "array", "items": { "type": "string" } },
+          "purpose": { "type": "string" },
+          "last_audited_commit": { "type": "string" }
+        }
+      }
+    }
+  }
+}
