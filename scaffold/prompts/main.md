@@ -41,5 +41,5 @@ prompts/
 - Treat Gitflow content as a learning prompt, not proof that the repository currently has those branches.
 
 ## Open questions / TODO
-- Decide where generated IIR scripts and their tests should live.
+- Future shared IIR artifacts still need a canonical location; Cristian's three prompt-derived notebooks live under `cristian-work/`.
 - Reconcile exact GNU Radio block types before using the example as executable code.

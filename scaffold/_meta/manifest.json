@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "generated_at": "2026-09-12T00:00:00-05:00",
-  "commit": "ce73307",
+  "commit": "96aaf65",
   "sections": [
     {
       "path": "scaffold/INDEX.md",
