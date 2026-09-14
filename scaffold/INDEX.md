@@ -1,6 +1,6 @@
 # Scaffold INDEX
 
-> Last audited: 2026-09-12 @ commit `ce73307`
+> Last audited: 2026-09-12 @ commit `96aaf65`
 
 ## Purpose
 Provide the layer-0 navigation map for agents working on the IQ-oriented Python/NumPy learning materials and their supporting prompts.
@@ -50,4 +50,4 @@ notebooks/*.ipynb -> notebooks/pre_m0_generation_report.json
 
 ## Open questions / TODO
 - No dependency lockfile currently documents exact NumPy and Matplotlib versions.
-- The IIR prompt set describes future code work, but no IIR implementation exists in the repository.
+- All three IIR implementation prompts now have corresponding notebooks under `cristian-work/`.

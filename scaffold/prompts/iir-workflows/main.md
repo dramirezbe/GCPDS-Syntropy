@@ -34,9 +34,12 @@ prompts/
 
 ## Common tasks & gotchas
 - `single_pole_iir_filter_ff` is float-valued while `vector_source_c` and `vector_sink_c` are complex; this proposed chain requires correction or separate I/Q paths.
+- `single_pole_iir_filter_ff` is provided by `gnuradio.filter`, despite the original prompt placing it under `gnuradio.blocks`.
 - Normalized cutoff conventions must be stated consistently when SciPy filter code is created.
 - `iir-scaffold.md` is only an invocation prompt, not repository documentation itself.
 
 ## Open questions / TODO
-- Choose a type-correct GNU Radio IIR topology before implementation.
+- The Cristian notebook resolves GNU Radio stream types by splitting complex input into float I/Q paths, filtering each path, and recombining them.
+- The pseudocode workflow is implemented and runtime-validated in `cristian-work/iir_pseudocode_to_code.ipynb`.
+- The plain-instructions workflow is implemented and runtime-validated in `cristian-work/iir_plain_instructions_to_code.ipynb`.
 - Decide whether Gitflow is normative for this repository or only instructional content.
