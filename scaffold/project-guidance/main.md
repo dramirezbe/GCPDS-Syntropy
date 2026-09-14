@@ -20,7 +20,8 @@ Document the repository-level files that govern agent behavior, environment setu
 ├── tasks.md                          # Informal backlog
 ├── .agents/skills/
 │   ├── project-scaffold/             # Three-layer navigation workflow
-│   ├── pseudocode/                   # Educational pseudocode workflow
+│   ├── pseudocode-specific/            # Detailed educational pseudocode workflow
+│   ├── pseudocode-general/             # High-level code flow description
 │   └── python-notebook/              # Raw notebook JSON generation workflow
 ├── .atl/skill-registry.md            # Generated skill index
 └── .gitignore                        # Ignored local artifacts

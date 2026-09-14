@@ -1,0 +1,125 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath, amssymb}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{gray!5},
+  frame=single,
+  framerule=0.4pt,
+  rulecolor=\color{gray!50},
+  breaklines=true,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  keywordstyle=\color{blue!70!black}\bfseries,
+  commentstyle=\color{green!50!black},
+  stringstyle=\color{red!60!black},
+  morekeywords={FUNCTION,END,DECLARE,AS,RETURN,WHILE,TRUE,FOR,IF,ELSE,END FUNCTION,END WHILE,END FOR,END IF},
+  literate={←}{$\leftarrow$}2 {→}{$\rightarrow$}2
+}
+
+\title{SDR Monitoring --- Pseudocode Example}
+\author{pseudocode-specific skill}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Overview}
+
+High-level SDR monitoring pipeline: SoapySDR $\rightarrow$ IQ acquisition $\rightarrow$ Welch PSD $\rightarrow$ Plot.
+
+\begin{lstlisting}[language={},caption={High-level flow (pseudocode-general)}]
+1. IMPORT LIBRARIES (SoapySDR, numpy, scipy.signal, matplotlib)
+2. sdr = SETUP SDR DEVICE (driver="rtlsdr", sample_rate=2.4e6, center_freq=100e6, gain=40)
+3. iq = ACQUIRE IQ STREAM (sdr, num_samples=65536)
+4. f, psd = APPLY WELCH METHOD (iq, fs=2.4e6, nperseg=1024, noverlap=512)
+5. PLOT frequency spectrum (f, psd, xlabel="Frequency (Hz)", ylabel="PSD (dB/Hz)")
+6. SAVE figure ("output/sdr_welch.png")
+7. LOOP forever:
+   7.1 iq = ACQUIRE IQ STREAM (sdr, num_samples=65536)
+   7.2 f, psd = APPLY WELCH METHOD (iq, fs=2.4e6, nperseg=1024, noverlap=512)
+   7.3 UPDATE plot (f, psd)
+   7.4 PAUSE (0.1s)
+\end{lstlisting}
+
+\newpage
+
+\section*{Detailed Pseudocode}
+
+\begin{lstlisting}[caption={SDR Monitoring --- pseudocode-specific conventions}]
+DECLARE SAMPLE_RATE AS FLOAT <- 2.4e6
+DECLARE CENTER_FREQ  AS FLOAT <- 100e6
+DECLARE GAIN         AS FLOAT <- 40
+DECLARE NUM_SAMPLES  AS INTEGER <- 65536
+DECLARE NPERSEG      AS INTEGER <- 1024
+DECLARE NOVERLAP     AS INTEGER <- 512
+
+FUNCTION SetupSDRDevice(driver, sample_rate, center_freq, gain)
+    DECLARE sdr AS DEVICE
+    <- SoapySDR.Device(driver)
+    <- sdr.setSampleRate(sample_rate)
+    <- sdr.setFrequency(center_freq)
+    <- sdr.setGain(gain)
+    RETURN sdr
+END FUNCTION
+
+FUNCTION AcquireIQStream(sdr, num_samples)
+    DECLARE iq     AS ARRAY
+    DECLARE buffer AS ARRAY of COMPLEX
+    <- sdr.setupStream(SOAPY_RX)
+    <- sdr.readStream(buffer, num_samples)
+    <- buffer.astype(COMPLEX64)
+    RETURN iq
+END FUNCTION
+
+FUNCTION ApplyWelchMethod(iq, fs, nperseg, noverlap)
+    DECLARE f   AS ARRAY
+    DECLARE psd AS ARRAY
+    (f, psd) <- scipy.signal.welch(iq, fs=fs,
+                 nperseg=nperseg, noverlap=noverlap)
+    RETURN (f, psd)
+END FUNCTION
+
+FUNCTION PlotSpectrum(f, psd, title)
+    DECLARE fig AS FIGURE
+    <- matplotlib.pyplot.figure()
+    <- matplotlib.pyplot.plot(f, psd)
+    <- matplotlib.pyplot.xlabel("Frequency (Hz)")
+    <- matplotlib.pyplot.ylabel("PSD (dB/Hz)")
+    <- matplotlib.pyplot.title(title)
+    <- matplotlib.pyplot.grid(TRUE)
+    RETURN fig
+END FUNCTION
+
+FUNCTION SaveFigure(fig, path)
+    <- fig.savefig(path)
+END FUNCTION
+
+FUNCTION ContinuousMonitoring(sdr)
+    DECLARE f   AS ARRAY
+    DECLARE psd AS ARRAY
+    DECLARE fig AS FIGURE
+    WHILE TRUE = TRUE
+        iq <- AcquireIQStream(sdr, NUM_SAMPLES)
+        (f, psd) <- ApplyWelchMethod(iq, SAMPLE_RATE,
+                      NPERSEG, NOVERLAP)
+        fig <- PlotSpectrum(f, psd, "SDR Monitoring")
+        matplotlib.pyplot.pause(0.1)
+    END WHILE
+END FUNCTION
+
+--- Main ---
+sdr <- SetupSDRDevice("rtlsdr", SAMPLE_RATE, CENTER_FREQ, GAIN)
+iq <- AcquireIQStream(sdr, NUM_SAMPLES)
+(f, psd) <- ApplyWelchMethod(iq, SAMPLE_RATE, NPERSEG, NOVERLAP)
+fig <- PlotSpectrum(f, psd, "SDR Monitoring")
+SaveFigure(fig, "output/sdr_welch.png")
+ContinuousMonitoring(sdr)
+\end{lstlisting}
+
+\end{document}

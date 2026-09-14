@@ -3,16 +3,16 @@
 ## Context
 
 Topic: IIR filter applied to IQ dummy signal
-Skill: `pseudocode` (from `.agents/skills/pseudocode/SKILL.md`)
+Skill: `pseudocode-specific` (from `.agents/skills/pseudocode-specific/SKILL.md`)
 
 ## Skill to Use
 
-Load the `pseudocode` skill first, then follow its activation contract.
+Load the `pseudocode-specific` skill first, then follow its activation contract.
 
 ## Prompt
 
 ```
-Using the pseudocode skill, write pseudocode for an IIR low-pass filter applied to a synthetic IQ signal.
+Using the pseudocode-specific skill, write pseudocode for an IIR low-pass filter applied to a synthetic IQ signal.
 
 Requirements:
 - Generate a synthetic IQ signal: X.shape == (N, 2, L) with SEED=42

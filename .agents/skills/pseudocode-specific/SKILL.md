@@ -1,5 +1,5 @@
 ---
-name: pseudocode
+name: pseudocode-specific
 description: "Trigger: pseudocode, write pseudocode, algorithm design, sketch algorithm, pseudocode review, understand pseudocode. Create, interpret, and validate educational pseudocode across all common programming constructs."
 license: Apache-2.0
 metadata:
