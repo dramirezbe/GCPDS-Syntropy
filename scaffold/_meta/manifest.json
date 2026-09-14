@@ -1,73 +1,45 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "generated_at": "2026-09-12T00:00:00-05:00",
-  "commit": "96aaf65",
+  "generated_at": "2026-09-14T12:05:00-05:00",
+  "commit": "27696d6",
   "sections": [
     {
       "path": "scaffold/INDEX.md",
       "layer": 0,
       "parent": "",
       "children": [
-        "scaffold/notebooks/main.md",
-        "scaffold/prompts/main.md",
+        "scaffold/examples/main.md",
         "scaffold/project-guidance/main.md"
       ],
       "purpose": "Repository-wide navigation map for AI agents.",
-      "last_audited_commit": "ce73307"
+      "last_audited_commit": "27696d6"
     },
     {
-      "path": "scaffold/notebooks/main.md",
+      "path": "scaffold/examples/main.md",
       "layer": 1,
       "parent": "scaffold/INDEX.md",
       "children": [
-        "scaffold/notebooks/foundations/main.md",
-        "scaffold/notebooks/visualization-and-assessment/main.md"
+        "scaffold/examples/study-nbs/main.md",
+        "scaffold/examples/iir-nnbs/main.md"
       ],
-      "purpose": "Overview of the eight-notebook Pre-M0 IQ curriculum.",
-      "last_audited_commit": "ce73307"
+      "purpose": "Overview of study notebooks and IIR exercise notebooks.",
+      "last_audited_commit": "27696d6"
     },
     {
-      "path": "scaffold/notebooks/foundations/main.md",
+      "path": "scaffold/examples/study-nbs/main.md",
       "layer": 2,
-      "parent": "scaffold/notebooks/main.md",
+      "parent": "scaffold/examples/main.md",
       "children": [],
-      "purpose": "Detail for notebooks 1-5 covering Python and NumPy foundations.",
-      "last_audited_commit": "ce73307"
+      "purpose": "Detail for the eight-notebook Pre-M0 IQ curriculum.",
+      "last_audited_commit": "27696d6"
     },
     {
-      "path": "scaffold/notebooks/visualization-and-assessment/main.md",
+      "path": "scaffold/examples/iir-nnbs/main.md",
       "layer": 2,
-      "parent": "scaffold/notebooks/main.md",
+      "parent": "scaffold/examples/main.md",
       "children": [],
-      "purpose": "Detail for notebooks 6-8 covering visualization, power, and assessment.",
-      "last_audited_commit": "ce73307"
-    },
-    {
-      "path": "scaffold/prompts/main.md",
-      "layer": 1,
-      "parent": "scaffold/INDEX.md",
-      "children": [
-        "scaffold/prompts/notebook-generation/main.md",
-        "scaffold/prompts/iir-workflows/main.md"
-      ],
-      "purpose": "Overview of notebook-generation and IIR workflow prompts.",
-      "last_audited_commit": "ce73307"
-    },
-    {
-      "path": "scaffold/prompts/notebook-generation/main.md",
-      "layer": 2,
-      "parent": "scaffold/prompts/main.md",
-      "children": [],
-      "purpose": "Detail for the notebook generation and pass-criterion prompts.",
-      "last_audited_commit": "ce73307"
-    },
-    {
-      "path": "scaffold/prompts/iir-workflows/main.md",
-      "layer": 2,
-      "parent": "scaffold/prompts/main.md",
-      "children": [],
-      "purpose": "Detail for IIR code, pseudocode, GNU Radio, and Git workflow prompts.",
-      "last_audited_commit": "ce73307"
+      "purpose": "Detail for IIR exercise notebooks across authors.",
+      "last_audited_commit": "27696d6"
     },
     {
       "path": "scaffold/project-guidance/main.md",
@@ -75,7 +47,7 @@
       "parent": "scaffold/INDEX.md",
       "children": [],
       "purpose": "Repository rules, environment setup, local skills, registry, and backlog.",
-      "last_audited_commit": "ce73307"
+      "last_audited_commit": "27696d6"
     }
   ]
 }

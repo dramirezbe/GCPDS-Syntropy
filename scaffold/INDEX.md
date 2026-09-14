@@ -1,22 +1,22 @@
 # Scaffold INDEX
 
-> Last audited: 2026-09-12 @ commit `96aaf65`
+> Last audited: 2026-09-14 @ commit `27696d6`
 
 ## Purpose
-Provide the layer-0 navigation map for agents working on the IQ-oriented Python/NumPy learning materials and their supporting prompts.
+Provide the layer-0 navigation map for agents working on the IQ-oriented Python/NumPy learning materials, their supporting prompts, and project guidance.
 
 ## Tech stack & conventions
 - Jupyter Notebook with Python 3 kernels.
 - NumPy `float32` tensors use the canonical shape `(N, 2, L)`.
 - Axis 0 is examples, axis 1 is I/Q components, and axis 2 is time samples.
 - Prompts and agent documentation are Markdown; scaffold metadata is JSON.
+- All learning materials now live under `examples/` directory.
 
 ## Structure
 ```text
 scaffold/
 ├── INDEX.md                         # ★ ENTRY POINT: repository map
-├── notebooks/                       # Curriculum documentation
-├── prompts/                         # Prompt documentation
+├── examples/                        # Curriculum and IIR exercises documentation
 ├── project-guidance/                # Repository-operating guidance
 └── _meta/                           # Manifest and raw exploration notes
 ```
@@ -24,21 +24,21 @@ scaffold/
 ### Section map
 | Section | Purpose | Docs |
 | --- | --- | --- |
-| Notebooks | Eight sequential Pre-M0 labs teaching Python and NumPy through IQ signals | [notebooks/main.md](notebooks/main.md) |
-| Prompts | Source instructions for notebook generation, IIR exercises, and Git workflow | [prompts/main.md](prompts/main.md) |
+| Examples | Study notebooks and IIR exercise notebooks | [examples/main.md](examples/main.md) |
 | Project guidance | Agent environment rules, local skills, registry, and work backlog | [project-guidance/main.md](project-guidance/main.md) |
 
 ## Entry points
-- `AGENTS.md` -> mandatory operating and GNU Radio environment instructions.
-- `notebooks/pre_m0_1_python_functions_for_iq.ipynb` -> start of the learner sequence.
-- `prompts/create-nbs.md` -> generation contract for all eight notebooks.
-- `tasks.md` -> project backlog and exercise ideas.
+- `AGENTS.md` -> mandatory operating, environment, and package installation instructions.
+- `examples/study-nbs/pre_m0_1_python_functions_for_iq.ipynb` -> start of the learner sequence.
+- `examples/iir-nnbs/prompts/create-nbs.md` -> generation contract for all eight notebooks.
+- `examples/iir-nnbs/prompts/iir-pseudocode-to-code.md` -> pseudocode to SciPy implementation.
+- `.agents/skills/git-flow/SKILL.md` -> branch strategy and PR workflow.
 
 ## Key interactions
 ```text
 AGENTS.md -> scaffold/INDEX.md -> section docs -> repository files
-prompts/create-nbs.md + prompts/pass-criterion.txt -> notebooks/*.ipynb
-notebooks/*.ipynb -> notebooks/pre_m0_generation_report.json
+examples/iir-nnbs/prompts/*.md -> examples/iir-nnbs/<author>/*.ipynb
+examples/study-nbs/prompts/create-nbs.md -> examples/study-nbs/*.ipynb
 .agents/skills/* -> agent workflows; .atl/skill-registry.md indexes them
 ```
 
@@ -47,7 +47,8 @@ notebooks/*.ipynb -> notebooks/pre_m0_generation_report.json
 - Update the relevant section docs and manifest whenever repository structure or contracts change.
 - Notebook pass gates combine automatic checks with a manually verified axis explanation.
 - GNU Radio requires a virtual environment created with `--system-site-packages`; see `AGENTS.md`.
+- All packages are detected and installed dynamically; never hardcode `requirements.txt`.
 
 ## Open questions / TODO
 - No dependency lockfile currently documents exact NumPy and Matplotlib versions.
-- All three IIR implementation prompts now have corresponding notebooks under `cristian-work/`.
+- Consider adding notebook execution tests to CI pipeline.

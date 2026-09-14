@@ -12,13 +12,12 @@ Only then inspect source notebooks, prompts, or project files. If source and sca
 
 | Section | Purpose | Documentation |
 | --- | --- | --- |
-| Notebooks | Pre-M0 Python/NumPy curriculum using IQ data | [scaffold/notebooks/main.md](scaffold/notebooks/main.md) |
-| Prompts | Reusable notebook, IIR, and workflow instructions | [scaffold/prompts/main.md](scaffold/prompts/main.md) |
-| Project guidance | Agent rules, skills, task backlog, and registries | [scaffold/project-guidance/main.md](scaffold/project-guidance/main.md) |
+| Examples | Study notebooks and IIR exercise notebooks | [scaffold/examples/main.md](scaffold/examples/main.md) |
+| Project guidance | Agent environment rules, local skills, registry, and work backlog | [scaffold/project-guidance/main.md](scaffold/project-guidance/main.md) |
 
 ## Cristian Workspace Convention
 
-Work requested for Cristian must be performed on the `feature/iir-cristian` branch and placed under `cristian-work/`, unless a task explicitly requires modifying a shared project file. Read [`cristian-work/WORKSPACE.md`](cristian-work/WORKSPACE.md) for its notebook map and conventions.
+Work requested for Cristian must be performed on the `feature/iir-cristian` branch and placed under `examples/iir-nnbs/cristian/`, unless a task explicitly requires modifying a shared project file. Read [`examples/iir-nnbs/cristian/WORKSPACE.md`](examples/iir-nnbs/cristian/WORKSPACE.md) for its notebook map and conventions.
 
 ## Git Flow
 
