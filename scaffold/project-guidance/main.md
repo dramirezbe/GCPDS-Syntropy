@@ -23,7 +23,8 @@ Document the repository-level files that govern agent behavior, environment setu
 │   ├── git-flow/                     # Branch strategy, PR workflow, divergence checks
 │   ├── pseudocode-specific/          # Detailed educational pseudocode workflow
 │   ├── pseudocode-general/           # High-level code flow description
-│   └── python-notebook/              # Raw notebook JSON generation workflow
+│   ├── python-notebook/              # Raw notebook JSON generation workflow
+│   └── python-notebook-audit/        # Notebook quality audit and reporting
 ├── .atl/skill-registry.md            # Generated skill index
 └── .gitignore                        # Ignored local artifacts
 ```
