@@ -20,6 +20,17 @@ Only then inspect source notebooks, prompts, or project files. If source and sca
 
 Work requested for Cristian must be performed on the `feature/iir-cristian` branch and placed under `cristian-work/`, unless a task explicitly requires modifying a shared project file. Read [`cristian-work/WORKSPACE.md`](cristian-work/WORKSPACE.md) for its notebook map and conventions.
 
+## Git Flow
+
+All development follows the git-flow convention. Load `.agents/skills/git-flow/SKILL.md` before any branch or PR operation.
+
+**Quick reference:**
+- `main` — production, no direct pushes
+- `develop` — integration branch, all PRs target this
+- `feature/<name>`, `fix/<name>`, `docs/<name>` — always branch from `develop`
+- Never delete branches after merge
+- Always `git fetch origin --prune --tags` before starting work
+
 ## Python and GNU Radio Environment
 
 Before running Python code that depends on GNU Radio, ensure the system has `python3-venv` installed.
@@ -89,3 +100,84 @@ python -c "import gnuradio; print(gnuradio.__file__)"
 ```
 
 GNU Radio command-line tools such as `gnuradio-companion` are installed system-wide and should remain available while the `.venv` is activated.
+
+## Required Packages
+
+This project needs Python packages for notebooks, testing, and skills.
+Do NOT hardcode a `requirements.txt`. Instead, detect and install dynamically.
+
+### Detection Flow
+
+1. Check if package is importable: `python3 -c "import <pkg>"`
+2. If missing, ask user to install system prerequisites:
+   ```bash
+   sudo apt update && sudo apt install -y python3-full python3-venv
+   ```
+3. Create virtual environment with system access:
+   ```bash
+   python3 -m venv --system-site-packages .venv
+   source .venv/bin/activate
+   pip install --upgrade pip
+   ```
+4. Install missing packages:
+   ```bash
+   pip install numpy matplotlib scipy nbformat nbconvert pytest
+   ```
+5. Verify: `python3 -c "import numpy, matplotlib, scipy"`
+
+### Package Map
+
+| Context | Packages | When Needed |
+|---------|----------|-------------|
+| Notebooks | numpy, matplotlib, scipy | Always |
+| Notebook testing | nbformat, nbconvert | When validating .ipynb |
+| Notebook execution | papermill | When running notebooks end-to-end |
+| Pseudocode examples | numpy, matplotlib, scipy | When generating code examples |
+| GNU Radio | gnuradio (system apt) | When running GR notebooks |
+| Git flow | gh CLI | When creating PRs |
+
+### GNU Radio Special Case
+
+GNU Radio is installed via apt, not pip. Requires `--system-site-packages`:
+```bash
+sudo apt install -y gnuradio python3-venv
+python3 -m venv --system-site-packages .venv
+```
+
+## Post-Task Gate
+
+After completing ANY task, run this gate before saying "done":
+
+### 1. Environment Check
+```bash
+python3 -c "import numpy, matplotlib, scipy; print('Core packages OK')"
+```
+
+### 2. Notebook Validation (if notebooks changed)
+```bash
+python3 -c "
+import nbformat, sys
+for nb in sys.argv[1:]:
+    try:
+        nbformat.read(nb, as_version=4)
+        print(f'OK {nb}')
+    except Exception as e:
+        print(f'FAIL {nb}: {e}')
+        sys.exit(1)
+" path/to/notebook.ipynb
+```
+
+### 3. Scaffold Consistency (if structure changed)
+- Verify `scaffold/_meta/manifest.json` matches actual files
+- Update affected `scaffold/<section>/main.md` if needed
+
+### 4. Skill Registry (if skills changed)
+- Refresh `.atl/skill-registry.md` if skill files modified
+
+### Gate Output Format
+```
+OK Environment: all packages available
+OK Notebooks: 3 files validated
+OK Scaffold: manifest current
+OK Skill registry: up to date
+```

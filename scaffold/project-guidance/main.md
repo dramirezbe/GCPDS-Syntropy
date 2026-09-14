@@ -20,6 +20,7 @@ Document the repository-level files that govern agent behavior, environment setu
 ├── tasks.md                          # Informal backlog
 ├── .agents/skills/
 │   ├── project-scaffold/             # Three-layer navigation workflow
+│   ├── git-flow/                     # Branch strategy, PR workflow, divergence checks
 │   ├── pseudocode-specific/            # Detailed educational pseudocode workflow
 │   ├── pseudocode-general/             # High-level code flow description
 │   └── python-notebook/              # Raw notebook JSON generation workflow
@@ -36,12 +37,14 @@ Document the repository-level files that govern agent behavior, environment setu
 - **AGENTS.md -> scaffold:** directs agents through the scaffold before source inspection.
 - **Skill registry -> SKILL.md:** the registry locates skills; the skill file supplies the actual contract.
 - **GNU Radio -> virtual environment:** apt-installed Python modules require `python3 -m venv --system-site-packages .venv`.
+- **Post-Task Gate:** verification checklist run after completing any task.
 
 ## Common tasks & gotchas
 - First run `python3 -c "import gnuradio"`; install packages only if verification fails.
 - Never create the project environment with an isolated `python3 -m venv .venv`.
 - Refresh the skill registry after adding or changing skills; do not hand-edit generated registry content.
 - `tasks.md` is a planning note and includes items that may already be partially completed.
+- Do NOT hardcode `requirements.txt`; detect and install packages dynamically per AGENTS.md.
 
 ## Open questions / TODO
 - Clarify which `tasks.md` items remain current and which are historical.

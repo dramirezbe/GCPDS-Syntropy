@@ -1,9 +1,9 @@
 Create skills:
-- pseudocode examples
-- create and use scaffold (from scratch) [Create prompt research scaffold]
-- create and use scaffold (already did for other people)
-- git flow (admin, user. branch main, branch develop, branch feature, branch release, branch hotfix, branch refactor)
-- skill jupyter notebook (create, edit, use)
+- pseudocode examples ✅ (pseudocode-specific + pseudocode-general)
+- create and use scaffold (from scratch) ✅ (project-scaffold)
+- create and use scaffold (already did for other people) ✅ (project-scaffold)
+- git flow (admin, user. branch main, branch develop, branch feature, branch release, branch hotfix, branch refactor) ✅ (git-flow)
+- skill jupyter notebook (create, edit, use) ✅ (python-notebook)
 
 Create notebook and content:
 - Create nb (create scaffold)
