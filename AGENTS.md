@@ -30,6 +30,28 @@ All development follows the git-flow convention. Load `.agents/skills/git-flow/S
 - Never delete branches after merge
 - Always `git fetch origin --prune --tags` before starting work
 
+## Environment Bootstrap
+
+Before running any Python code, detect the OS and install dependencies:
+
+```bash
+python3 cmd/detect_OS.py          # prints e.g. "Ubuntu 26.04"
+```
+
+If the OS is Linux (or any bash-compatible system), run:
+
+```bash
+bash cmd/linux-pkg.sh
+```
+
+This script:
+1. Detects its location and navigates to the repo root
+2. Installs system packages via apt: `gnuradio`, `python3-venv`
+3. Creates `.venv` with `--system-site-packages` (required for GNU Radio)
+4. Installs Python packages: `numpy matplotlib scipy nbformat nbconvert pytest`
+
+> `apt install` requires root — there is no user-level alternative for system packages.
+
 ## Python and GNU Radio Environment
 
 Before running Python code that depends on GNU Radio, ensure the system has `python3-venv` installed.
