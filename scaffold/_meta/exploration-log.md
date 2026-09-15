@@ -1,6 +1,6 @@
 # Exploration Log
 
-> Last audited: 2026-09-12 @ commit `ce73307`
+> Last audited: 2026-09-15 @ commit `5e9b936`
 
 ## Purpose
 Preserve raw Phase 1 repository findings used to synthesize the scaffold hierarchy.
@@ -69,3 +69,24 @@ Repository findings
 - Clean sequential execution ran all seven code cells and created a temporary 37,858-byte `filtered_iq.npz` outside the repository.
 - Runtime verification preserved `(5, 2, 1000)` float32 data and changed joint power from `1.207514` to `0.927528` (ratio `0.768130`).
 - `nbclient` execution was unavailable because the environment has no registered `python3` kernelspec; clean-namespace sequential execution was used instead.
+
+## Cross-platform bootstrap update — 2026-09-15
+- `cmd/detect_OS.py` added: zero-dependency OS detection using `/etc/os-release` (Linux), `sw_vers` (macOS), `sys.platform` (Windows).
+- `cmd/linux-pkg.sh` added: Linux bootstrap with colored logs (purple INFO, red ERROR, yellow WARNING), UTC-5 timestamps, apt install of `gnuradio` and `python3-venv`, venv creation with `--system-site-packages`, pip install of core packages.
+- `cmd/mac-pkg.sh` added: macOS bootstrap using Homebrew; auto-installs Homebrew if missing.
+- `cmd/win-pkg.ps1` added: Windows PowerShell bootstrap using winget/choco.
+- All log timestamps use `TZ="America/Bogota"` (UTC-5), format `yyyy-mm-dd hh:mm:ss [LEVEL]`.
+- Ruff notes: E901 removed in modern ruff (syntax errors always shown); F823 merged into F821; F822 is `__all__` undefined exports.
+
+## Audit documentation update — 2026-09-15
+- `context/audit/Audit-ML-Notebook.tex` created: full LaTeX document with three-gate ML audit workflow and TikZ flowchart.
+- References: Yang (2022), Subotic (2023), Kaufman (2022), Breck (2019), Sculley (2011), NIST (2023).
+- TikZ flowchart compiled to 4 pages, ~335 KB; diagram fits page width via `\resizebox{\textwidth}{!}{...}`.
+- `context/audit/NBQA_USAGE.md` created: ruff/nbqa/black/yapf pipeline reference with `--ignore=F821` on fatal gate and style check.
+- `context/audit/ML-Audit-flow.md` created: source ASCII flow diagram for the audit workflow.
+- `context/audit/ML-audit-html.html` created: rendered HTML version of audit flow.
+
+## Examples restructuring update — 2026-09-15
+- `examples/final-nb/` added: contains `reference-nb.ipynb`, `reference-nb-requirements.txt`, and `issue-nb.ipynb`.
+- `examples/nbqa-playground/` added: contains `fail-nb.ipynb` with intentional ruff F821/F822 failures for gate testing.
+- `examples/fail-nb.ipynb` moved to `examples/nbqa-playground/fail-nb.ipynb`.

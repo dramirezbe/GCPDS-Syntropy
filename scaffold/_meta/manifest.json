@@ -1,18 +1,46 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "generated_at": "2026-09-14T12:05:00-05:00",
-  "commit": "27696d6",
+  "generated_at": "2026-09-15T12:00:00-05:00",
+  "commit": "5e9b936",
   "sections": [
     {
       "path": "scaffold/INDEX.md",
       "layer": 0,
       "parent": "",
       "children": [
+        "scaffold/cmd/main.md",
+        "scaffold/context/main.md",
         "scaffold/examples/main.md",
         "scaffold/project-guidance/main.md"
       ],
       "purpose": "Repository-wide navigation map for AI agents.",
-      "last_audited_commit": "27696d6"
+      "last_audited_commit": "5e9b936"
+    },
+    {
+      "path": "scaffold/cmd/main.md",
+      "layer": 1,
+      "parent": "scaffold/INDEX.md",
+      "children": [],
+      "purpose": "Cross-platform environment bootstrap scripts (OS detection, package install).",
+      "last_audited_commit": "5e9b936"
+    },
+    {
+      "path": "scaffold/context/main.md",
+      "layer": 1,
+      "parent": "scaffold/INDEX.md",
+      "children": [
+        "scaffold/context/audit/main.md"
+      ],
+      "purpose": "Reference documents, design artifacts, and audit workflow materials.",
+      "last_audited_commit": "5e9b936"
+    },
+    {
+      "path": "scaffold/context/audit/main.md",
+      "layer": 2,
+      "parent": "scaffold/context/main.md",
+      "children": [],
+      "purpose": "ML notebook audit workflow: three-gate pipeline with TikZ flowchart.",
+      "last_audited_commit": "5e9b936"
     },
     {
       "path": "scaffold/examples/main.md",
@@ -20,10 +48,12 @@
       "parent": "scaffold/INDEX.md",
       "children": [
         "scaffold/examples/study-nbs/main.md",
-        "scaffold/examples/iir-nnbs/main.md"
+        "scaffold/examples/iir-nnbs/main.md",
+        "scaffold/examples/final-nb/main.md",
+        "scaffold/examples/nbqa-playground/main.md"
       ],
-      "purpose": "Overview of study notebooks and IIR exercise notebooks.",
-      "last_audited_commit": "27696d6"
+      "purpose": "Overview of study notebooks, IIR exercises, final notebooks, and NBQA playground.",
+      "last_audited_commit": "5e9b936"
     },
     {
       "path": "scaffold/examples/study-nbs/main.md",
@@ -42,12 +72,28 @@
       "last_audited_commit": "27696d6"
     },
     {
+      "path": "scaffold/examples/final-nb/main.md",
+      "layer": 2,
+      "parent": "scaffold/examples/main.md",
+      "children": [],
+      "purpose": "Validated final notebooks (reference and issue).",
+      "last_audited_commit": "5e9b936"
+    },
+    {
+      "path": "scaffold/examples/nbqa-playground/main.md",
+      "layer": 2,
+      "parent": "scaffold/examples/main.md",
+      "children": [],
+      "purpose": "NBQA quality validation sandbox with intentional failures.",
+      "last_audited_commit": "5e9b936"
+    },
+    {
       "path": "scaffold/project-guidance/main.md",
       "layer": 1,
       "parent": "scaffold/INDEX.md",
       "children": [],
       "purpose": "Repository rules, environment setup, local skills, registry, and backlog.",
-      "last_audited_commit": "27696d6"
+      "last_audited_commit": "5e9b936"
     }
   ]
 }

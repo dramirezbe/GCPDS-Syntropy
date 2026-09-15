@@ -2,7 +2,7 @@
 
 > Parent: [../INDEX.md](../INDEX.md)
 > Children: none
-> Last audited: 2026-09-14 @ commit `27696d6`
+> Last audited: 2026-09-15 @ commit `5e9b936`
 
 ## Purpose
 Document the repository-level files that govern agent behavior, environment setup, available local skills, and pending exercises.
@@ -17,6 +17,11 @@ Document the repository-level files that govern agent behavior, environment setu
 ```text
 ./
 ├── AGENTS.md                         # ★ ENTRY POINT: agent and environment rules
+├── cmd/                              # Cross-platform environment bootstrap
+│   ├── detect_OS.py                  # OS detection (zero dependencies, stdlib only)
+│   ├── linux-pkg.sh                  # Linux: apt install, venv, pip (colored logs, UTC-5)
+│   ├── mac-pkg.sh                    # macOS: brew install (auto-installs Homebrew)
+│   └── win-pkg.ps1                   # Windows: PowerShell bootstrap
 ├── .agents/harness-tasks.md          # Harness task tracking
 ├── .agents/skills/
 │   ├── project-scaffold/             # Three-layer navigation workflow
@@ -31,12 +36,15 @@ Document the repository-level files that govern agent behavior, environment setu
 
 ## Entry points
 - `AGENTS.md` -> read before running GNU Radio-dependent Python or modifying the project.
+- `cmd/detect_OS.py` -> run first to detect platform; output drives which bootstrap script to invoke.
+- `cmd/linux-pkg.sh` -> Linux environment bootstrap (requires `sudo` for apt).
 - `.agents/skills/project-scaffold/SKILL.md` -> maintain this scaffold.
 - `.agents/skills/git-flow/SKILL.md` -> branch strategy and PR workflow.
 - `.agents/harness-tasks.md` -> discover unfinished project exercises.
 
 ## Key interactions
 - **AGENTS.md -> scaffold:** directs agents through the scaffold before source inspection.
+- **detect_OS.py -> platform scripts:** OS detection selects the correct bootstrap script.
 - **Skill registry -> SKILL.md:** the registry locates skills; the skill file supplies the actual contract.
 - **GNU Radio -> virtual environment:** apt-installed Python modules require `python3 -m venv --system-site-packages .venv`.
 - **Post-Task Gate:** verification checklist run after completing any task.

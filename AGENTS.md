@@ -12,7 +12,9 @@ Only then inspect source notebooks, prompts, or project files. If source and sca
 
 | Section | Purpose | Documentation |
 | --- | --- | --- |
-| Examples | Study notebooks and IIR exercise notebooks | [scaffold/examples/main.md](scaffold/examples/main.md) |
+| Cmd | Cross-platform environment bootstrap scripts (OS detection, package install) | [scaffold/cmd/main.md](scaffold/cmd/main.md) |
+| Context | Reference documents, design artifacts, and audit workflow materials | [scaffold/context/main.md](scaffold/context/main.md) |
+| Examples | Study notebooks, IIR exercises, final notebooks, and NBQA playground | [scaffold/examples/main.md](scaffold/examples/main.md) |
 | Project guidance | Agent environment rules, local skills, registry, and work backlog | [scaffold/project-guidance/main.md](scaffold/project-guidance/main.md) |
 
 ## Cristian Workspace Convention
