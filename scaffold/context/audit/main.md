@@ -21,6 +21,7 @@ audit/
 ├── Audit-ML-Notebook.pdf       # Compiled output (4 pages, ~335 KB)
 ├── ML-Audit-flow.md            # Source ASCII flow diagram (human-readable)
 ├── ML-audit-html.html          # Rendered HTML version of audit flow
+├── ML-audit-block-diagrams.html # Block-diagram rendering of the audit flow
 ├── NBQA_USAGE.md               # ruff/nbqa/black/yapf pipeline reference
 └── diagram-audit.excalidraw    # Excalidraw audit diagram
 ```
@@ -32,6 +33,7 @@ audit/
 
 ## Key interactions
 - **ML-Audit-flow.md -> Audit-ML-Notebook.tex:** ASCII flow is the source of truth; TikZ renders it.
+- **ML-audit-html.html -> ML-audit-block-diagrams.html:** same flow in two notations; the block-diagram view adds no requirements, so both must be updated together or they drift.
 - **NBQA_USAGE.md -> examples/nbqa-playground/fail-nb.ipynb:** documents the pipeline that fail-nb validates.
 - **Gate 1:** deterministic health checks (ruff F821/F822, cell metadata, kernel spec).
 - **Gate 2:** ML methodology audit; UNVERIFIABLE findings escalate to human review.

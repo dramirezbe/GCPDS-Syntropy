@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ML notebook validation pipeline — block diagrams</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:ital@1&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0E13;
+    --surface:#12161E;
+    --surface-2:#1A2029;
+    --surface-3:#0E1219;
+    --border:#262E3A;
+    --border-soft:#1E2530;
+    --text:#E8EAEE;
+    --text-dim:#8D96A6;
+    --text-faint:#5C6472;
+
+    --gray:#7C8695;   --gray-bg:#1A1F27;
+    --violet:#A18CFF; --violet-bg:#1E1B2E;
+    --green:#3FCB92;  --green-bg:#122420;
+    --teal:#3FBFCB;   --teal-bg:#101F22;
+    --amber:#F0A94E;  --amber-bg:#26200F;
+    --red:#EF6F6C;    --red-bg:#271518;
+
+    --amber-dim:#7A5B22;
+
+    /* block-diagram geometry */
+    --gutter:56px;
+    --bus-x:20px;
+    --wire:2px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',system-ui,sans-serif;
+    line-height:1.55;
+    padding:56px 24px 96px;
+  }
+  .wrap{max-width:900px;margin:0 auto;}
+
+  /* ---------- header ---------- */
+  header{margin-bottom:36px;}
+  header .kicker{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;color:var(--text-faint);
+    letter-spacing:0.02em;margin:0 0 10px;
+  }
+  h1{font-size:30px;font-weight:600;margin:0 0 14px;letter-spacing:-0.01em;}
+  header p{color:var(--text-dim);max-width:66ch;font-size:15px;margin:0;}
+
+  .legend{
+    display:flex;flex-wrap:wrap;gap:10px 18px;
+    margin-top:26px;padding:16px 18px;
+    background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  }
+  .legend-item{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-dim);}
+  .legend-dot{width:9px;height:9px;border-radius:50%;flex:none;}
+
+  .srcnote{
+    margin:22px 0 0;padding:12px 16px;
+    background:var(--surface-3);border:1px solid var(--border-soft);border-radius:8px;
+    font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--text-faint);
+  }
+  .srcnote a{color:var(--text-dim);text-decoration:none;border-bottom:1px solid var(--border);}
+
+  /* ---------- diagram section shell ---------- */
+  .diagram{margin-top:52px;}
+  .d-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:6px;}
+  .d-num{
+    font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:500;
+    color:var(--text-faint);border:1px solid var(--border);border-radius:5px;
+    padding:2px 7px;flex:none;
+  }
+  h2{font-size:19px;font-weight:600;margin:0;letter-spacing:-0.005em;}
+  .d-sub{color:var(--text-dim);font-size:13.5px;margin:8px 0 18px;max-width:72ch;}
+  .d-sub code{
+    font-family:'IBM Plex Mono',monospace;font-size:12px;
+    background:var(--surface-2);border:1px solid var(--border-soft);
+    border-radius:4px;padding:1px 5px;
+  }
+
+  .board{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:30px 22px;
+    overflow:hidden;
+  }
+  .d-cap{margin:12px 0 0;font-size:12.5px;color:var(--text-faint);}
+  .d-cap em{font-family:'Source Serif 4',serif;font-size:13px;}
+
+  /* ---------- row + bus rails ---------- */
+  .row{display:grid;grid-template-columns:var(--gutter) 1fr;}
+  .bus{position:relative;}
+  .bus .line{
+    position:absolute;left:var(--bus-x);width:0;
+    border-left:var(--wire) dashed var(--amber-dim);
+  }
+  /* order matters: later rules win, so tap < tail */
+  .bus--head .line{top:50%;bottom:0;}
+  .bus--mid  .line{top:0;bottom:0;}
+  .bus--tap  .line{top:0;bottom:0;}
+  .bus--tail .line{top:0;bottom:50%;}
+
+  /* elbow: bus turns right into the source block */
+  .bus--head .elbow{
+    position:absolute;left:var(--bus-x);right:0;top:50%;height:0;
+    border-top:var(--wire) dashed var(--amber-dim);
+  }
+  .bus--head .elbow::after{
+    content:'';position:absolute;right:-1px;top:-4px;
+    border-top:4px solid transparent;border-bottom:4px solid transparent;
+    border-left:6px solid var(--amber);
+  }
+  /* tap: a failing block's port feeds left into the bus */
+  .bus--tap .tap{
+    position:absolute;left:var(--bus-x);right:0;top:50%;height:0;
+    border-top:var(--wire) dashed var(--amber-dim);
+  }
+  .bus--tap .tap::before{
+    content:'';position:absolute;left:-1px;top:-4px;
+    border-top:4px solid transparent;border-bottom:4px solid transparent;
+    border-right:6px solid var(--amber);
+  }
+  .bus-tag{
+    position:absolute;left:calc(var(--bus-x) + 8px);top:50%;
+    transform:translateY(-50%);
+    font-family:'IBM Plex Mono',monospace;font-size:9.5px;
+    color:var(--amber);letter-spacing:0.04em;
+    background:var(--surface);padding:2px 0;
+  }
+  .bus-spine{
+    position:absolute;left:calc(var(--bus-x) + 1px);top:50%;
+    transform:translate(-50%,-50%) rotate(180deg);
+    writing-mode:vertical-rl;
+    font-family:'IBM Plex Mono',monospace;font-size:9.5px;
+    letter-spacing:0.14em;color:var(--text-faint);
+    background:var(--surface);padding:8px 0;white-space:nowrap;
+  }
+
+  .node-cell{display:flex;flex-direction:column;align-items:center;min-width:0;}
+  .node-cell > *{width:100%;}
+  .node-cell--pad{padding:16px 0;}
+  .node-cell--loop{padding-right:64px;}
+
+  /* ---------- connectors ---------- */
+  .arrow{display:flex;flex-direction:column;align-items:center;position:relative;padding:6px 0;}
+  .arrow .shaft{width:var(--wire);height:22px;background:var(--border);}
+  .arrow .head{
+    width:0;height:0;
+    border-left:5px solid transparent;border-right:5px solid transparent;
+    border-top:8px solid var(--border);
+  }
+  .arrow .flow-label{
+    position:absolute;left:calc(50% + 14px);top:50%;transform:translateY(-50%);
+    font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.04em;
+    color:var(--text-faint);white-space:nowrap;
+  }
+  .arrow.is-pass .shaft{background:var(--green);}
+  .arrow.is-pass .head{border-top-color:var(--green);}
+  .arrow.is-pass .flow-label{color:var(--green);}
+
+  /* ---------- nodes ---------- */
+  .node{
+    position:relative;
+    background:var(--surface-2);
+    border:1.5px solid var(--accent,var(--gray));
+    border-radius:10px;
+    padding:18px 20px;
+  }
+  .node-head{display:flex;align-items:flex-start;gap:12px;}
+  .badge{
+    font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:500;
+    color:var(--accent,var(--gray));
+    background:var(--accent-bg,var(--gray-bg));
+    border-radius:6px;padding:3px 9px;flex:none;margin-top:2px;
+  }
+  .node-head .titles{min-width:0;}
+  .kicker-small{
+    font-family:'IBM Plex Mono',monospace;font-size:10.5px;
+    color:var(--text-faint);margin:0 0 3px;
+  }
+  h3{font-size:16px;font-weight:600;margin:0;letter-spacing:-0.005em;}
+  .node-q{
+    font-family:'Source Serif 4',serif;font-style:italic;
+    color:var(--text-dim);font-size:13.5px;margin:12px 0 0;
+    padding-left:12px;border-left:2px solid var(--border);
+  }
+  .node-meta{color:var(--text-faint);font-size:12px;margin:10px 0 0;}
+  .d-ref{
+    font-family:'IBM Plex Mono',monospace;font-size:10.5px;
+    color:var(--text-faint);margin:12px 0 0;
+  }
+  .ports{display:flex;flex-wrap:wrap;gap:7px;margin-top:13px;}
+  .port{
+    font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:500;
+    border-radius:5px;padding:3px 8px;border:1px solid transparent;
+  }
+  .port.pass{color:var(--green);background:var(--green-bg);border-color:#1E4438;}
+  .port.fail{color:var(--red);background:var(--red-bg);border-color:#4A2427;}
+  .port.warn{color:var(--amber);background:var(--amber-bg);border-color:var(--amber-dim);}
+
+  /* terminal pill */
+  .term{
+    display:flex;flex-direction:column;align-items:center;
+    background:var(--surface-2);border:1.5px solid var(--gray);
+    border-radius:24px;padding:12px 26px;text-align:center;
+  }
+  .term strong{font-size:14.5px;font-weight:600;}
+  .term span{font-size:12px;color:var(--text-faint);}
+
+  /* checkpoint */
+  .ckpt{
+    background:var(--surface-3);
+    border:1.5px solid var(--accent,var(--violet));
+    border-radius:10px;
+    padding:15px 18px;
+    font-size:13.5px;color:var(--text-dim);
+  }
+  .ckpt strong{color:var(--text);font-weight:600;}
+  .ckpt-cond{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;
+    color:var(--accent,var(--violet));margin-top:7px;
+  }
+
+  /* self loop (Gate 2 re-run) */
+  .selfloop{
+    position:absolute;left:100%;margin-left:10px;top:50%;
+    transform:translateY(-50%);
+    width:44px;height:74px;
+    border:var(--wire) dashed var(--amber-dim);border-left:none;
+    border-radius:0 12px 12px 0;
+  }
+  .selfloop::after{
+    content:'';position:absolute;left:-1px;bottom:-4px;
+    border-top:4px solid transparent;border-bottom:4px solid transparent;
+    border-right:6px solid var(--amber);
+  }
+  .selfloop span{
+    position:absolute;left:6px;top:50%;transform:translateY(-50%);
+    font-family:'IBM Plex Mono',monospace;font-size:9px;
+    color:var(--amber);line-height:1.35;width:34px;
+  }
+
+  /* ---------- fork (decision branching) ---------- */
+  .decision{
+    display:flex;align-items:center;justify-content:center;text-align:center;
+    background:var(--accent-bg,var(--surface-3));
+    padding:15px 34px;
+    clip-path:polygon(14px 0,calc(100% - 14px) 0,100% 50%,calc(100% - 14px) 100%,14px 100%,0 50%);
+  }
+  .decision .dq{
+    font-size:13.5px;font-weight:600;
+    color:var(--accent,var(--text));
+  }
+
+  /* offset the fork by the gutter so it shares the node column's geometry */
+  .fork{padding-left:var(--gutter);}
+  .fork-stub{width:var(--wire);height:20px;margin:0 auto;background:var(--border);}
+  .fork-bar{height:var(--wire);background:var(--border);margin:0 25%;}
+  .fork-bar--3{margin:0 16.66%;}
+  .fork-legs{display:grid;grid-template-columns:1fr 1fr;gap:22px;}
+  .fork-legs--3{grid-template-columns:repeat(3,1fr);gap:18px;}
+  .leg{display:flex;flex-direction:column;align-items:center;min-width:0;}
+  .leg .stub{width:var(--wire);height:18px;background:var(--border);}
+
+  .outcome{
+    width:100%;
+    border:1.5px solid var(--border-soft);
+    border-radius:9px;
+    padding:13px 15px;
+    font-size:13px;
+    background:var(--surface-2);
+  }
+  .outcome .tag{
+    font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:500;
+    border-radius:5px;padding:2px 8px;margin-right:8px;
+    display:inline-block;
+  }
+  .outcome.pass{border-color:#1E4438;}
+  .outcome.pass .tag{color:var(--green);background:var(--green-bg);}
+  .outcome.fail{border-color:#4A2427;}
+  .outcome.fail .tag{color:var(--red);background:var(--red-bg);}
+  .outcome.warn{border-color:var(--amber-dim);}
+  .outcome.warn .tag{color:var(--amber);background:var(--amber-bg);}
+  .outcome-detail{color:var(--text-dim);margin-top:8px;font-size:12.5px;}
+  .loopback{
+    display:inline-flex;align-items:center;gap:7px;margin-top:10px;
+    font-family:'IBM Plex Mono',monospace;font-size:11px;
+    color:var(--amber);background:var(--amber-bg);
+    border:1px dashed var(--amber-dim);border-radius:7px;padding:6px 10px;
+  }
+
+  /* ---------- inner block grids (checks / dimensions / capabilities) ---------- */
+  .group{
+    border:1px dashed var(--border);
+    border-radius:11px;
+    padding:15px 16px;
+  }
+  .group-label{
+    font-family:'IBM Plex Mono',monospace;font-size:10.5px;
+    color:var(--accent,var(--text-faint));
+    margin:0 0 11px;
+  }
+  .blocks{display:grid;gap:9px;}
+  .blocks--2{grid-template-columns:repeat(2,1fr);}
+  .blocks--3{grid-template-columns:repeat(3,1fr);}
+  .blocks--4{grid-template-columns:repeat(4,1fr);}
+  .blk{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:7px;
+    padding:9px 11px;
+    font-size:12px;
+    text-align:center;
+    display:flex;align-items:center;justify-content:center;
+    min-height:40px;
+  }
+  .blk.tinted{background:var(--accent-bg,var(--surface));border-color:var(--accent,var(--border));}
+  .blk.mono{font-family:'IBM Plex Mono',monospace;font-size:11px;}
+
+  /* axis blocks for gate 2 */
+  .axis-block{
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-top:2px solid var(--violet);
+    border-radius:9px;
+    padding:13px 14px;
+  }
+  .axis-name{font-size:12.5px;font-weight:600;margin:0 0 10px;}
+  .axis-name em{
+    font-style:normal;font-family:'IBM Plex Mono',monospace;
+    font-size:11px;color:var(--violet);margin-right:7px;
+  }
+  .axis-dims{display:flex;flex-direction:column;gap:6px;}
+  .dim{
+    font-size:11.5px;color:var(--text-dim);
+    background:var(--surface);border:1px solid var(--border-soft);
+    border-radius:5px;padding:5px 9px;
+  }
+
+  /* capability lane (MLOps) */
+  .lane{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+  .lane + .lane{margin-top:14px;}
+
+  /* ---------- gate matrix ---------- */
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  caption{
+    text-align:left;font-size:12.5px;color:var(--text-faint);
+    padding-bottom:12px;caption-side:top;
+  }
+  th,td{
+    text-align:left;padding:11px 13px;
+    border-bottom:1px solid var(--border-soft);
+    vertical-align:top;
+  }
+  thead th{
+    font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:500;
+    color:var(--text-faint);text-transform:uppercase;letter-spacing:0.06em;
+    border-bottom:1px solid var(--border);
+  }
+  tbody tr:last-child td{border-bottom:none;}
+  td.gate{
+    font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:500;
+    color:var(--accent,var(--text));
+  }
+  td .yn{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-dim);}
+
+  footer{
+    margin-top:44px;padding-top:22px;
+    border-top:1px solid var(--border);
+    color:var(--text-faint);font-size:12.5px;
+  }
+
+  @media (max-width:760px){
+    :root{--gutter:34px;--bus-x:12px;}
+    body{padding:36px 14px 72px;}
+    h1{font-size:24px;}
+    .board{padding:22px 13px;}
+    .selfloop{display:none;}
+    .node-cell--loop{padding-right:0;}
+    .blocks--4,.blocks--3{grid-template-columns:repeat(2,1fr);}
+    .lane{grid-template-columns:1fr;}
+    .fork-legs,.fork-legs--3{grid-template-columns:1fr;gap:0;}
+    .fork-bar{display:none;}
+    .bus-spine{display:none;}
+    .arrow .flow-label{left:calc(50% + 10px);font-size:9.5px;}
+    .decision{padding:13px 18px;}
+    table{font-size:12px;}
+    th,td{padding:9px 8px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <p class="kicker">MLOps validation pipeline — first iteration</p>
+    <h1>From notebook to production, one gate at a time</h1>
+    <p>The same three-gate validation pipeline, redrawn as block diagrams. Every stage, check, sub-check, decision, and feedback loop from the original design is preserved — only the notation changed: blocks are stages and checks, solid wires are control flow, and amber dashed wires are the return paths.</p>
+
+    <div class="legend">
+      <div class="legend-item"><span class="legend-dot" style="background:var(--gray)"></span>Deterministic checks</div>
+      <div class="legend-item"><span class="legend-dot" style="background:var(--violet)"></span>AI-assisted audit</div>
+      <div class="legend-item"><span class="legend-dot" style="background:var(--green)"></span>Controlled execution</div>
+      <div class="legend-item"><span class="legend-dot" style="background:var(--teal)"></span>Operational stage</div>
+      <div class="legend-item"><span class="legend-dot" style="background:var(--amber)"></span>Feedback loop</div>
+      <div class="legend-item"><span class="legend-dot" style="background:var(--red)"></span>Fail state</div>
+    </div>
+
+    <p class="srcnote">Derived from <a href="ML-audit-html.html">ML-audit-html.html</a> · companion to <a href="ML-Audit-flow.md">ML-Audit-flow.md</a> and <a href="Audit-ML-Notebook.tex">Audit-ML-Notebook.tex</a>. Notation only — no requirements added or dropped.</p>
+  </header>
+
+
+  <!-- ================= DIAGRAM 01 ================= -->
+  <section class="diagram">
+    <div class="d-head"><span class="d-num">01</span><h2>End-to-end gate pipeline</h2></div>
+    <p class="d-sub">Control flow through the whole pipeline. <code>PASS</code> wires advance downward; every failing gate taps left into the dashed amber <strong>return bus</strong>, which carries control back up to the notebook. Expanded views follow in diagrams 02–06.</p>
+
+    <div class="board">
+      <div class="chain">
+
+        <!-- source -->
+        <div class="row">
+          <div class="bus bus--head"><span class="line"></span><span class="elbow"></span></div>
+          <div class="node-cell">
+            <div class="term"><strong>ML notebook</strong><span>the user's experiment</span></div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="bus bus--mid"><span class="line"></span></div>
+          <div class="node-cell"><div class="arrow"><span class="shaft"></span><span class="head"></span></div></div>
+        </div>
+
+        <!-- G1 -->
+        <div class="row">
+          <div class="bus bus--tap"><span class="line"></span><span class="tap"></span><span class="bus-tag">F1</span></div>
+          <div class="node-cell">
+            <div class="node" style="--accent:var(--gray);--accent-bg:var(--gray-bg)">
+              <div class="node-head">
+                <span class="badge">G1</span>
+                <div class="titles">
+                  <p class="kicker-small">Gate 1 · deterministic, no AI, no execution</p>
+                  <h3>Notebook health — nbQA</h3>
+                </div>
+              </div>
+              <p class="node-q">Is the notebook technically healthy?</p>
+              <div class="ports">
+                <span class="port pass">PASS → normalize</span>
+                <span class="port fail">FAIL → F1 suggest fix</span>
+              </div>
+              <p class="d-ref">→ expanded: diagram 02</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="bus bus--mid"><span class="line"></span><span class="bus-spine">RETURN BUS</span></div>
+          <div class="node-cell"><div class="arrow is-pass"><span class="shaft"></span><span class="head"></span><span class="flow-label">PASS</span></div></div>
+        </div>
+
+        <!-- normalization -->
+        <div class="row">
+          <div class="bus bus--mid"><span class="line"></span></div>
+          <div class="node-cell">
+            <div class="node" style="--accent:var(--gray);--accent-bg:var(--gray-bg)">
+              <div class="node-head">
+                <span class="badge">→</span>
+                <div class="titles">
+                  <p class="kicker-small">Deterministic · no experiment execution</p>
+                  <h3>Normalization + context extraction</h3>
+                </div>
+              </div>
+              <p class="node-meta">Produces the normalized notebook and the extracted structural context consumed by Gate 2.</p>
+              <p class="d-ref">→ expanded: diagram 03</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="bus bus--mid"><span class="line"></span></div>
+          <div class="node-cell"><div class="arrow"><span class="shaft"></span><span class="head"></span></div></div>
+        </div>
+
+        <!-- G2 -->
+        <div class="row">
+          <div class="bus bus--tap"><span class="line"></span><span class="tap"></span><span class="bus-tag">F2</span></div>
+          <div class="node-cell node-cell--loop">
+            <div class="node" style="--accent:var(--violet);--accent-bg:var(--violet-bg)">
+              <div class="node-head">
+                <span class="badge">G2</span>
+                <div class="titles">
+                  <p class="kicker-small">Gate 2 · AI-assisted, no code execution</p>
+                  <h3>ML methodological audit</h3>
+                </div>
+              </div>
+              <p class="node-q">Is the ML experiment methodologically sound?</p>
+              <div class="ports">
+                <span class="port pass">PASS → checkpoint 1</span>
+                <span class="port fail">FAIL → F2 remediation</span>
+                <span class="port warn">UNVERIFIABLE → re-run G2</span>
+              </div>
+              <p class="d-ref">→ expanded: diagram 04</p>
+              <div class="selfloop"><span>↺ re-run<br>+context</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="bus bus--mid"><span class="line"></span></div>
+          <div class="node-cell"><div class="arrow is-pass"><span class="shaft"></span><span class="head"></span><span class="flow-label">PASS</span></div></div>
+        </div>
+
+        <!-- checkpoint 1 -->
+        <div class="row">
+          <div class="bus bus--mid"><span class="line"></span></div>
+          <div class="node-cell">
+            <div class="ckpt" style="--accent:var(--violet)">
+              <strong>Checkpoint 1 · Methodological pre-MLOps approval</strong>
+              <div>The notebook is methodologically acceptable for experimental execution.</div>
+              <div class="ckpt-cond">GATE 1 = PASS ∧ GATE 2 = PASS</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="bus bus--mid"><span class="line"></span></div>
+          <div class="node-cell"><div class="arrow"><span class="shaft"></span><span class="head"></span></div></div>
+        </div>
+
+        <!-- G3 -->
+        <div class="row">
+          <div class="bus bus--tail bus--tap"><span class="line"></span><span class="tap"></span><span class="bus-tag">F3</span></div>
+          <div class="node-cell">
+            <div class="node" style="--accent:var(--green);--accent-bg:var(--green-bg)">
+              <div class="node-head">
+                <span class="badge">G3</span>
+                <div class="titles">
+                  <p class="kicker-small">Gate 3 · controlled execution, no AI audit</p>
+                  <h3>Experiment execution</h3>
+                </div>
+              </div>
+              <p class="node-q">Does the validated experiment actually execute?</p>
+              <div class="ports">
+                <span class="port pass">SUCCESS → checkpoint 2</span>
+                <span class="port fail">FAILURE → F3 execution error</span>
+              </div>
+              <p class="d-ref">→ expanded: diagram 05</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="bus"></div>
+          <div class="node-cell"><div class="arrow is-pass"><span class="shaft"></span><span class="head"></span><span class="flow-label">SUCCESS</span></div></div>
+        </div>
+
+        <!-- checkpoint 2 -->
+        <div class="row">
+          <div class="bus"></div>
+          <div class="node-cell">
+            <div class="ckpt" style="--accent:var(--green)">
+              <strong>Checkpoint 2 · Pre-MLOps experiment gate</strong>
+              <div>The experiment executed successfully under controlled conditions.</div>
+              <div class="ckpt-cond">GATE 3 = PASS</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="bus"></div>
+          <div class="node-cell"><div class="arrow"><span class="shaft"></span><span class="head"></span></div></div>
+        </div>
+
+        <!-- MLOps -->
+        <div class="row">
+          <div class="bus"></div>
+          <div class="node-cell">
+            <div class="node" style="--accent:var(--teal);--accent-bg:var(--teal-bg)">
+              <div class="node-head">
+                <span class="badge">→</span>
+                <div class="titles">
+                  <p class="kicker-small">Operational stage</p>
+                  <h3>MLOps</h3>
+                </div>
+              </div>
+              <p class="node-q">Can the validated experiment become an operational ML system?</p>
+              <p class="d-ref">→ expanded: diagram 06</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <p class="d-cap"><strong>Return bus:</strong> F1 (Gate 1 fail → auto-fix deterministic/mechanical problems), F2 (Gate 2 fail → remediation recommendations only), F3 (Gate 3 failure → diagnose/report with suggested correction). The G2 <strong>UNVERIFIABLE</strong> outcome is a self-loop, not a bus tap: it re-runs the audit with added context.</p>
+  </section>
+
+
+  <!-- ================= DIAGRAM 02 ================= -->
+  <section class="diagram">
+    <div class="d-head"><span class="d-num">02</span><h2>Gate 1 — Notebook health (nbQA)</h2></div>
+    <p class="d-sub">Deterministic gate. No AI, no execution. Eight check blocks run over the notebook; the decision consumes all of them.</p>
+
+    <div class="board">
+      <div class="chain">
+        <div class="row">
+          <div class="bus"></div>
+          <div class="node-cell">
+            <div class="group" style="--accent:var(--gray)">
+              <p class="group-label">G1 · CHECK BLOCKS — nbQA</p>
+              <div class="blocks blocks--4">
+                <div class="blk tinted" style="--accent:var(--gray);--accent-bg:var(--gray-bg)">Notebook structure</div>
+                <div class="blk tinted" style="--accent:var(--gray);--accent-bg:var(--gray-bg)">nbformat / JSON health</div>
+                <div class="blk tinted" style="--accent:var(--gray);--accent-bg:var(--gray-bg)">Syntax errors</div>
+                <div class="blk tinted" style="--accent:var(--gray);--accent-bg:var(--gray-bg)">Undefined variables</div>
+                <div class="blk tinted" style="--accent:var(--gray);--accent-bg:var(--gray-bg)">Imports / static issues</div>
+                <div class="blk tinted" style="--accent:var(--gray);--accent-bg:var(--gray-bg)">Linting</div>
+                <div class="blk tinted" style="--accent:var(--gray);--accent-bg:var(--gray-bg)">Formatting</div>
+                <div class="blk tinted" style="--accent:var(--gray);--accent-bg:var(--gray-bg)">Cell integrity</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="bus"></div>
+          <div class="node-cell"><div class="arrow"><span class="shaft"></span><span class="head"></span><span class="flow-label">all checks</span></div></div>
+        </div>
+
+        <div class="row">
+          <div class="bus"></div>
+          <div class="node-cell">
+            <div class="decision" style="--accent:var(--gray);--accent-bg:var(--gray-bg)">
+              <span class="dq">Is the notebook technically healthy?</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="fork">
+          <div class="fork-stub"></div>
+          <div class="fork-bar"></div>
+          <div class="fork-legs">
+            <div class="leg">
+              <div class="stub"></div>
+              <div class="outcome pass">
+                <span class="tag">PASS</span>continue to normalization + context extraction
+              </div>
+            </div>
+            <div class="leg">
+              <div class="stub"></div>
+              <div class="outcome fail">
+                <span class="tag">FAIL</span><strong>Suggest fix</strong> — auto-fix only deterministic / mechanical problems
+                <div class="loopback">↺ feedback 1 — back to ML notebook</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ================= DIAGRAM 03 ================= -->
+  <section class="diagram">
+    <div class="d-head"><span class="d-num">03</span><h2>Normalization + context extraction</h2></div>
+    <p class="d-sub">Deterministic stage, no experiment execution. Three normalizer blocks produce the canonical notebook; seven extraction blocks produce the structural context Gate 2 audits.</p>
+
+    <div class="board">
+      <div class="chain">
+        <div class="row">
+          <div class="bus"></div>
+          <div class="node-cell">
+            <div class="group" style="--accent:var(--gray)">
+              <p class="group-label">STAGE BLOCK 1 · NORMALIZER</p>
+              <div class="blocks blocks--3">
+                <div class="blk tinted" style="--accent:var(--gray);--accent-bg:var(--gray-bg)">Normalize notebook structure</div>
+                <div class="blk tinted" style="--accent:var(--gray);--accent-bg:var(--gray-bg)">Normalize code representation</div>
+                <div class="blk tinted" style="--accent:var(--gray);--accent-bg:var(--gray-bg)">Preserve cell ordering</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="bus"></div>
+          <div class="node-cell"><div class="arrow"><span class="shaft"></span><span class="head"></span></div></div>
+        </div>
+
+        <div class="row">
+          <div class="bus"></div>
+          <div class="node-cell">
+            <div class="group" style="--accent:var(--gray)">
+              <p class="group-label">STAGE BLOCK 2 · CONTEXT EXTRACTION</p>
+              <div class="blocks blocks--4">
+                <div class="blk">AST</div>
+                <div class="blk">Symbol table</div>
+                <div class="blk">Cell dependencies</div>
+                <div class="blk">Data flow graph</div>
+                <div class="blk">Variables / DataFrames</div>
+                <div class="blk">ML operations</div>
+                <div class="blk mono">fit / transform / split / CV</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="d-cap">Output contract: normalized notebook + extracted context, consumed as input by Gate 2.</p>
+  </section>
+
+
+  <!-- ================= DIAGRAM 04 ================= -->
+  <section class="diagram">
+    <div class="d-head"><span class="d-num">04</span><h2>Gate 2 — ML methodological audit</h2></div>
+    <p class="d-sub">AI-assisted gate, no code execution. Audit engine AI · 3 axes / 7 audit dimensions · evidence-based findings. Three distinct outcomes, one of which is a self-loop rather than a return to the notebook.</p>
+
+    <div class="board">
+      <div class="chain">
+        <div class="row">
+          <div class="bus"></div>
+          <div class="node-cell">
+            <div class="group" style="--accent:var(--violet)">
+              <p class="group-label">AUDIT AXES → DIMENSIONS</p>
+              <div class="blocks blocks--3" style="align-items:stretch">
+                <div class="axis-block">
+                  <p class="axis-name"><em>1</em>Data integrity</p>
+                  <div class="axis-dims">
+                    <div class="dim">Leakage</div>
+                    <div class="dim">Splitting</div>
+                    <div class="dim">Data quality</div>
+                  </div>
+                </div>
+                <div class="axis-block">
+                  <p class="axis-name"><em>2</em>Evaluation integrity</p>
+                  <div class="axis-dims">
+                    <div class="dim">Validation</div>
+                    <div class="dim">Metrics</div>
+                  </div>
+                </div>
+                <div class="axis-block">
+                  <p class="axis-name"><em>3</em>Experiment integrity</p>
+                  <div class="axis-dims">
+                    <div class="dim">Reproducibility</div>
+                    <div class="dim">Experiment integrity</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="bus"></div>
+          <div class="node-cell"><div class="arrow"><span class="shaft"></span><span class="head"></span><span class="flow-label">evidence-based findings</span></div></div>
+        </div>
+
+        <div class="row">
+          <div class="bus"></div>
+          <div class="node-cell">
+            <div class="decision" style="--accent:var(--violet);--accent-bg:var(--violet-bg)">
+              <span class="dq">Is the ML experiment methodologically sound?</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="fork">
+          <div class="fork-stub"></div>
+          <div class="fork-bar fork-bar--3"></div>
+          <div class="fork-legs fork-legs--3">
+            <div class="leg">
+              <div class="stub"></div>
+              <div class="outcome pass">
+                <span class="tag">PASS</span>continue to methodological pre-MLOps approval
+              </div>
+            </div>
+            <div class="leg">
+              <div class="stub"></div>
+              <div class="outcome fail">
+                <span class="tag">FAIL</span><strong>Remediation</strong> — finding, evidence, impact, suggested fix
+                <div class="outcome-detail">No blind auto-correction: recommendations only.</div>
+                <div class="loopback">↺ feedback 2 — back to ML notebook</div>
+              </div>
+            </div>
+            <div class="leg">
+              <div class="stub"></div>
+              <div class="outcome warn">
+                <span class="tag">UNVERIFIABLE</span><strong>Human / context review required</strong>
+                <div class="outcome-detail">Insufficient information to establish PASS or FAIL.</div>
+                <div class="loopback">↺ re-run — back to Gate 2 with added context</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="d-cap">Only the <strong>FAIL</strong> outcome leaves Gate 2. <strong>UNVERIFIABLE</strong> stays at Gate 2 and is re-run with added context; <strong>PASS</strong> advances to Checkpoint 1.</p>
+  </section>
+
+
+  <!-- ================= DIAGRAM 05 ================= -->
+  <section class="diagram">
+    <div class="d-head"><span class="d-num">05</span><h2>Gate 3 — Experiment execution</h2></div>
+    <p class="d-sub">Controlled execution, no AI audit. The experiment run captures seven classes of evidence before the decision is made.</p>
+
+    <div class="board">
+      <div class="chain">
+        <div class="row">
+          <div class="bus"></div>
+          <div class="node-cell">
+            <div class="group" style="--accent:var(--green)">
+              <p class="group-label">EXPERIMENT RUN — CAPTURED EVIDENCE</p>
+              <div class="blocks blocks--4">
+                <div class="blk tinted" style="--accent:var(--green);--accent-bg:var(--green-bg)">Runtime errors</div>
+                <div class="blk tinted" style="--accent:var(--green);--accent-bg:var(--green-bg)">Execution success</div>
+                <div class="blk tinted" style="--accent:var(--green);--accent-bg:var(--green-bg)">Outputs</div>
+                <div class="blk tinted" style="--accent:var(--green);--accent-bg:var(--green-bg)">Metrics</div>
+                <div class="blk tinted" style="--accent:var(--green);--accent-bg:var(--green-bg)">Artifacts</div>
+                <div class="blk tinted" style="--accent:var(--green);--accent-bg:var(--green-bg)">Runtime reproducibility</div>
+                <div class="blk tinted" style="--accent:var(--green);--accent-bg:var(--green-bg)">Resource / runtime information</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="bus"></div>
+          <div class="node-cell"><div class="arrow"><span class="shaft"></span><span class="head"></span></div></div>
+        </div>
+
+        <div class="row">
+          <div class="bus"></div>
+          <div class="node-cell">
+            <div class="decision" style="--accent:var(--green);--accent-bg:var(--green-bg)">
+              <span class="dq">Does the validated experiment actually execute?</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="fork">
+          <div class="fork-stub"></div>
+          <div class="fork-bar"></div>
+          <div class="fork-legs">
+            <div class="leg">
+              <div class="stub"></div>
+              <div class="outcome pass">
+                <span class="tag">SUCCESS</span>continue to pre-MLOps experiment gate
+              </div>
+            </div>
+            <div class="leg">
+              <div class="stub"></div>
+              <div class="outcome fail">
+                <span class="tag">FAILURE</span><strong>Execution error</strong> — diagnose / report, suggested correction
+                <div class="loopback">↺ feedback 3 — back to ML notebook</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ================= DIAGRAM 06 ================= -->
+  <section class="diagram">
+    <div class="d-head"><span class="d-num">06</span><h2>MLOps — operational stage</h2></div>
+    <p class="d-sub">Terminal stage. Ten capability blocks, grouped by operational concern rather than sequenced — together they turn a validated experiment into an operational ML system.</p>
+
+    <div class="board">
+      <div class="chain">
+        <div class="row">
+          <div class="bus"></div>
+          <div class="node-cell node-cell--pad">
+            <div class="lane">
+              <div class="group" style="--accent:var(--teal)">
+                <p class="group-label">TRACKING &amp; VERSIONING</p>
+                <div class="blocks blocks--2">
+                  <div class="blk tinted" style="--accent:var(--teal);--accent-bg:var(--teal-bg)">Experiment tracking</div>
+                  <div class="blk tinted" style="--accent:var(--teal);--accent-bg:var(--teal-bg)">Data / artifact versioning</div>
+                </div>
+              </div>
+              <div class="group" style="--accent:var(--teal)">
+                <p class="group-label">MODEL LIFECYCLE</p>
+                <div class="blocks blocks--3">
+                  <div class="blk tinted" style="--accent:var(--teal);--accent-bg:var(--teal-bg)">Reproducible training</div>
+                  <div class="blk tinted" style="--accent:var(--teal);--accent-bg:var(--teal-bg)">Model versioning</div>
+                  <div class="blk tinted" style="--accent:var(--teal);--accent-bg:var(--teal-bg)">Model registry</div>
+                </div>
+              </div>
+            </div>
+            <div class="lane">
+              <div class="group" style="--accent:var(--teal)">
+                <p class="group-label">DELIVERY</p>
+                <div class="blocks blocks--2">
+                  <div class="blk tinted" style="--accent:var(--teal);--accent-bg:var(--teal-bg)">Training pipelines</div>
+                  <div class="blk tinted" style="--accent:var(--teal);--accent-bg:var(--teal-bg)">Deployment</div>
+                </div>
+              </div>
+              <div class="group" style="--accent:var(--teal)">
+                <p class="group-label">OPERATIONS</p>
+                <div class="blocks blocks--3">
+                  <div class="blk tinted" style="--accent:var(--teal);--accent-bg:var(--teal-bg)">Monitoring</div>
+                  <div class="blk tinted" style="--accent:var(--teal);--accent-bg:var(--teal-bg)">Retraining</div>
+                  <div class="blk tinted" style="--accent:var(--teal);--accent-bg:var(--teal-bg)">Governance</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="d-cap">Question answered by this stage: <em>Can the validated experiment become an operational ML system?</em></p>
+  </section>
+
+
+  <!-- ================= GATE MATRIX ================= -->
+  <section class="diagram">
+    <div class="d-head"><span class="d-num">07</span><h2>Gate matrix</h2></div>
+    <p class="d-sub">Recognition over recall: the same pipeline as a lookup table, so "which gate does X?" is answerable without re-reading the diagrams.</p>
+
+    <div class="board">
+      <table>
+        <caption>Three gates, two checkpoints, four return paths.</caption>
+        <thead>
+          <tr>
+            <th>Stage</th>
+            <th>Question</th>
+            <th>AI</th>
+            <th>Executes</th>
+            <th>Pass</th>
+            <th>Fail</th>
+            <th>Loop</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="--accent:var(--gray)">
+            <td class="gate">G1 · Notebook health (nbQA)</td>
+            <td>Is the notebook technically healthy?</td>
+            <td class="yn">no</td>
+            <td class="yn">no</td>
+            <td>normalization + context extraction</td>
+            <td>suggest fix (deterministic / mechanical only)</td>
+            <td>F1 → notebook</td>
+          </tr>
+          <tr style="--accent:var(--gray)">
+            <td class="gate">→ Normalization + context extraction</td>
+            <td>—</td>
+            <td class="yn">no</td>
+            <td class="yn">no</td>
+            <td>Gate 2</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+          <tr style="--accent:var(--violet)">
+            <td class="gate">G2 · ML methodological audit</td>
+            <td>Is the ML experiment methodologically sound?</td>
+            <td class="yn">yes</td>
+            <td class="yn">no</td>
+            <td>checkpoint 1</td>
+            <td>remediation (finding, evidence, impact, suggested fix)</td>
+            <td>F2 → notebook</td>
+          </tr>
+          <tr style="--accent:var(--violet)">
+            <td class="gate">G2 · UNVERIFIABLE</td>
+            <td>Insufficient information</td>
+            <td class="yn">yes</td>
+            <td class="yn">no</td>
+            <td>—</td>
+            <td>human / context review required</td>
+            <td>re-run G2 + context</td>
+          </tr>
+          <tr style="--accent:var(--green)">
+            <td class="gate">G3 · Experiment execution</td>
+            <td>Does the validated experiment actually execute?</td>
+            <td class="yn">no</td>
+            <td class="yn">yes</td>
+            <td>checkpoint 2</td>
+            <td>diagnose / report execution error, suggested correction</td>
+            <td>F3 → notebook</td>
+          </tr>
+          <tr style="--accent:var(--teal)">
+            <td class="gate">→ MLOps</td>
+            <td>Can the validated experiment become an operational ML system?</td>
+            <td class="yn">no</td>
+            <td class="yn">no</td>
+            <td>operational ML system</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="d-cap">Checkpoint 1 requires G1 = PASS ∧ G2 = PASS. Checkpoint 2 requires G3 = PASS.</p>
+  </section>
+
+  <footer>Every FAIL and UNVERIFIABLE branch returns control to the ML notebook or, for Gate 2, to a re-run of the audit — nothing advances silently.</footer>
+
+</div>
+</body>
+</html>

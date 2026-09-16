@@ -22,6 +22,7 @@ context/
 │   ├── Audit-ML-Notebook.pdf             # Compiled audit document (4 pages)
 │   ├── ML-Audit-flow.md                  # Source ASCII flow diagram
 │   ├── ML-audit-html.html                # Rendered HTML version of audit flow
+│   ├── ML-audit-block-diagrams.html      # Block-diagram rendering of the audit flow
 │   ├── NBQA_USAGE.md                     # ruff/nbqa/black/yapf pipeline reference
 │   └── diagram-audit.excalidraw          # Excalidraw audit diagram
 ├── 00 ProductionPipelinePCG.pdf          # Production pipeline reference
