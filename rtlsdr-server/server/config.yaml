@@ -1,0 +1,34 @@
+# Registry of RPi nodes and their dongles.
+# remote_port is the port on the university server where the reverse tunnel
+# for that dongle appears (REMOTE_BASE_PORT + dongle index on the RPi).
+# Ports must be globally unique. Serials are informational.
+nodes:
+  rpi-lab-01:
+    location: "RF Lab Building A"
+    dongles:
+      - index: 0
+        serial: "00000001"
+        remote_port: 28001
+        description: "VHF general"
+      - index: 1
+        serial: "00000002"
+        remote_port: 28002
+        description: "UHF general"
+  rpi-field-01:
+    location: "Rooftop Antenna"
+    dongles:
+      - index: 0
+        serial: "00000003"
+        remote_port: 28011
+        description: "FM broadcast"
+      - index: 1
+        serial: "00000004"
+        remote_port: 28012
+        description: "Airband"
+  rpi-field-02:
+    location: "Engineering Parking Lot"
+    dongles:
+      - index: 0
+        serial: "00000005"
+        remote_port: 28021
+        description: "ADS-B 1090 MHz"

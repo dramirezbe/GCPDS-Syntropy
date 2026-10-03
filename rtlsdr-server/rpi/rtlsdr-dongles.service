@@ -1,0 +1,16 @@
+[Unit]
+Description=rtl_tcp servers for all attached RTL-SDR dongles
+After=network.target
+
+[Service]
+Type=simple
+User=rtlsdr
+Group=rtlsdr
+ExecStart=/opt/rtlsdr/launch_rtltcp.sh
+Restart=on-failure
+RestartSec=5
+# Kill the whole process group so no rtl_tcp is orphaned.
+KillMode=control-group
+
+[Install]
+WantedBy=multi-user.target

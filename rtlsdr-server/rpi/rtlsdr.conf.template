@@ -1,0 +1,3 @@
+# rtl_tcp settings. Port for each dongle = BASE_PORT + device index.
+BASE_PORT=1234
+BIND_ADDRESS=127.0.0.1

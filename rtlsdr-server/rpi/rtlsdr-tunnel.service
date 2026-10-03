@@ -1,0 +1,16 @@
+[Unit]
+Description=autossh reverse tunnels for RTL-SDR dongles
+After=network-online.target rtlsdr-dongles.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=rtlsdr
+Group=rtlsdr
+Environment=AUTOSSH_GATETIME=0
+ExecStart=/opt/rtlsdr/tunnel.sh
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

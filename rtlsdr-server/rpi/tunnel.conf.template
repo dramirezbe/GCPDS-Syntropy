@@ -1,0 +1,8 @@
+# Reverse tunnel settings. Remote port for dongle i = REMOTE_BASE_PORT + i.
+# Each RPi must use a distinct REMOTE_BASE_PORT range (see server/config.yaml).
+SERVER_HOST=server.university.edu
+SERVER_USER=rtlsdr
+SERVER_PORT=22
+REMOTE_BASE_PORT=28001
+SSH_KEY=/home/rtlsdr/.ssh/id_rtlsdr
+MAX_DONGLES=4
