@@ -122,7 +122,15 @@ Conventional commit titles required:
 
 After a PR is merged, leave the branch intact on the remote. This preserves audit history and makes bisection easier.
 
-If a branch was accidentally deleted, recreate it from the merge commit:
+**CRITICAL: Never delete `develop` or `main`.** These are permanent branches. If accidentally deleted, recreate immediately:
+
+```bash
+git fetch origin
+git checkout -b develop origin/main
+git push origin develop
+```
+
+If a feature branch was accidentally deleted, recreate it from the merge commit:
 
 ```bash
 git fetch origin

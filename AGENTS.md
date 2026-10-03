@@ -17,6 +17,12 @@ Only then inspect source notebooks, prompts, or project files. If source and sca
 | Examples | Study notebooks, IIR exercises, final notebooks, and NBQA playground | [scaffold/examples/main.md](scaffold/examples/main.md) |
 | Project guidance | Agent environment rules, local skills, registry, and work backlog | [scaffold/project-guidance/main.md](scaffold/project-guidance/main.md) |
 
+## Project Skills (Mandatory)
+
+All project-scoped skills live under `.agents/skills/`. Before performing any task that matches a skill's trigger, read and follow its `SKILL.md`. Project-scoped skills take precedence over user-level or global skills covering the same concern.
+
+The skill registry at `.atl/skill-registry.md` indexes all available skills with their triggers and paths.
+
 ## Cristian Workspace Convention
 
 Work requested for Cristian must be performed on the `feature/iir-cristian` branch and placed under `examples/iir-nnbs/cristian/`, unless a task explicitly requires modifying a shared project file. Read [`examples/iir-nnbs/cristian/WORKSPACE.md`](examples/iir-nnbs/cristian/WORKSPACE.md) for its notebook map and conventions.
