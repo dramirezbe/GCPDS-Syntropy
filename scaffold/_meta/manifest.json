@@ -12,8 +12,8 @@
         "scaffold/prompts/main.md",
         "scaffold/project-guidance/main.md"
       ],
-      "purpose": "Repository-wide navigation map for AI agents.",
-      "last_audited_commit": "ce73307"
+      "purpose": "Repository-wide navigation map for AI agents, including the M1 training core.",
+      "last_audited_commit": "working tree"
     },
     {
       "path": "scaffold/notebooks/main.md",
@@ -74,8 +74,8 @@
       "layer": 1,
       "parent": "scaffold/INDEX.md",
       "children": [],
-      "purpose": "Repository rules, environment setup, local skills, registry, and backlog.",
-      "last_audited_commit": "ce73307"
+      "purpose": "Repository rules, environment setup, local skills, registry, backlog, and M1 training-core entry points.",
+      "last_audited_commit": "working tree"
     }
   ]
 }

@@ -18,7 +18,9 @@ scaffold/
 ├── notebooks/                       # Curriculum documentation
 ├── prompts/                         # Prompt documentation
 ├── project-guidance/                # Repository-operating guidance
-└── _meta/                           # Manifest and raw exploration notes
+├── _meta/                           # Manifest and raw exploration notes
+├── ../mcp_server/                   # M1 SigMF and CNN training core
+└── ../tests/                        # Dependency-aware focused tests
 ```
 
 ### Section map
@@ -33,6 +35,7 @@ scaffold/
 - `notebooks/pre_m0_1_python_functions_for_iq.ipynb` -> start of the learner sequence.
 - `prompts/create-nbs.md` -> generation contract for all eight notebooks.
 - `tasks.md` -> project backlog and exercise ideas.
+- `mcp_server/README.md` -> M1 training-core setup and external dataset usage.
 
 ## Key interactions
 ```text
@@ -40,6 +43,7 @@ AGENTS.md -> scaffold/INDEX.md -> section docs -> repository files
 prompts/create-nbs.md + prompts/pass-criterion.txt -> notebooks/*.ipynb
 notebooks/*.ipynb -> notebooks/pre_m0_generation_report.json
 .agents/skills/* -> agent workflows; .atl/skill-registry.md indexes them
+mcp_server/ -> tests/ -> M1 dataset/model/training verification
 ```
 
 ## Common tasks & gotchas

@@ -25,13 +25,16 @@ Document the repository-level files that govern agent behavior, environment setu
 │   ├── pseudocode-general/             # High-level code flow description
 │   └── python-notebook/              # Raw notebook JSON generation workflow
 ├── .atl/skill-registry.md            # Generated skill index
-└── .gitignore                        # Ignored local artifacts
+├── mcp_server/                        # M1 SigMF and CNN training core
+├── tests/                             # Dependency-aware focused tests
+└── .gitignore                         # Ignored local artifacts
 ```
 
 ## Entry points
 - `AGENTS.md` -> read before running GNU Radio-dependent Python or modifying the project.
 - `.agents/skills/project-scaffold/SKILL.md` -> maintain this scaffold.
 - `tasks.md` -> discover unfinished project exercises; verify before treating items as requirements.
+- `mcp_server/README.md` -> configure the external SigMF dataset and optional ML dependencies.
 
 ## Key interactions
 - **AGENTS.md -> scaffold:** directs agents through the scaffold before source inspection.
