@@ -31,7 +31,7 @@ construction and provenance in every report.
   reports.
 - [x] M1-03: Expose configuration, training, monitoring, cancellation, system
   metrics, and report retrieval through an MCP stdio server.
-- [ ] M1-04: Add focused tests and usage documentation, then validate with a
+- [x] M1-04: Add focused tests and usage documentation, then validate with a
   dependency-aware smoke test and repository post-task gate.
 
 ## Acceptance criteria
@@ -70,10 +70,22 @@ construction and provenance in every report.
 - `python3 -m mcp_server.server`: returned the documented exit code 2 and
   actionable MCP installation message because the MCP SDK is not installed.
 - Full training and live MCP client harness remain pending until optional
-  dependencies are available; M1-04 remains pending.
+  dependencies are available.
+
+## Final verification evidence
+
+- Work-unit commit: `b0ba2d7` (`feat(m1): expose configurable CNN training over MCP`).
+- `python3 -m unittest discover -v`: passed, 6 tests with 3 expected skips.
+- `python3 -m compileall -q mcp_server tests`: passed.
+- `python3 -m mcp_server.server`: correctly returned exit code 2 with an
+  actionable MCP installation message.
+- `python3 -c "import numpy, matplotlib, scipy; print('Core packages OK')"`:
+  unavailable because the environment lacks NumPy.
+- Live training and a real MCP client harness are pending dependency setup;
+  they were not represented as passing checks.
 
 ## Current next step
 
-Implement M1-04: complete dependency-aware verification, update the final
-documentation/scaffold if needed, commit the work unit, and prepare the
-authorized branch push.
+Feature implementation is complete for this branch. The remaining operation
+is the authorized push of `feature/Sebatoga`; merge/PR approval remains with
+the user.
