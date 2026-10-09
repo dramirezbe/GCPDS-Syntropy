@@ -1,0 +1,4 @@
+# Local Python and training artifacts for this milestone
+__pycache__/
+*.py[cod]
+checkpoints/

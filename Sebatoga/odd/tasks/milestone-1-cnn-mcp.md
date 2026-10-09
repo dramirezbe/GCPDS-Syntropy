@@ -49,7 +49,7 @@ construction and provenance in every report.
 
 ## Checks
 
-- Focused Python test command: `python3 -m pytest -q`
+- Focused Python test command from `Sebatoga/`: `python3 -m pytest -q`
 - MCP harness scenario: start the stdio server and exercise the exposed tools;
   record `N/A` only if the MCP dependency is unavailable in the environment.
 - Post-task environment check from `AGENTS.md`.
@@ -64,10 +64,10 @@ construction and provenance in every report.
 
 ## Verification evidence
 
-- `python3 -m compileall -q mcp_server tests`: passed.
-- `python3 -m unittest discover -v`: passed with 3 dependency-aware skips
+- From `Sebatoga/`, `python3 -m compileall -q mcp_server tests`: passed.
+- From `Sebatoga/`, `python3 -m unittest discover -v`: passed with 3 dependency-aware skips
   because NumPy and PyTorch are not installed in the current environment.
-- `python3 -m mcp_server.server`: returned the documented exit code 2 and
+- From `Sebatoga/`, `python3 -m mcp_server.server`: returned the documented exit code 2 and
   actionable MCP installation message because the MCP SDK is not installed.
 - Full training and live MCP client harness remain pending until optional
   dependencies are available.
@@ -75,9 +75,9 @@ construction and provenance in every report.
 ## Final verification evidence
 
 - Work-unit commit: `b0ba2d7` (`feat(m1): expose configurable CNN training over MCP`).
-- `python3 -m unittest discover -v`: passed, 6 tests with 3 expected skips.
-- `python3 -m compileall -q mcp_server tests`: passed.
-- `python3 -m mcp_server.server`: correctly returned exit code 2 with an
+- From `Sebatoga/`, `python3 -m unittest discover -v`: passed, 6 tests with 3 expected skips.
+- From `Sebatoga/`, `python3 -m compileall -q mcp_server tests`: passed.
+- From `Sebatoga/`, `python3 -m mcp_server.server`: correctly returned exit code 2 with an
   actionable MCP installation message.
 - `python3 -c "import numpy, matplotlib, scipy; print('Core packages OK')"`:
   unavailable because the environment lacks NumPy.

@@ -20,9 +20,10 @@ python3 -m pip install numpy torch mcp psutil
 
 ## Launch over stdio
 
-From the repository root:
+From the repository root, enter the dedicated workspace first:
 
 ```bash
+cd Sebatoga
 python3 -m mcp_server.server
 ```
 
