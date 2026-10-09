@@ -86,6 +86,5 @@ construction and provenance in every report.
 
 ## Current next step
 
-Feature implementation is complete for this branch. The remaining operation
-is the authorized push of `feature/Sebatoga`; merge/PR approval remains with
-the user.
+Feature implementation is complete for this branch. `feature/Sebatoga` is
+published on `origin`; merge/PR approval remains with the user.
