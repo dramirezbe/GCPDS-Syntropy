@@ -4,6 +4,11 @@ This package provides a reusable training core and an MCP stdio server. It
 loads SigMF `ci8_le` captures, creates deterministic `(N, 2, L)` `float32`
 windows, and trains a bounded configurable CNN in a background thread.
 
+The loader reads the standard SigMF names `global.core:datatype`,
+`captures[].core:sample_start`, and `captures[].core:frequency`. The older
+unqualified spellings remain accepted for compatibility with existing local
+fixtures.
+
 The intended external input is:
 `/home/sebato/Escritorio/clase_0310/DataBase-IQ-FM-88MHz-108MHz`.
 The external database is intentionally not part of this repository. Set

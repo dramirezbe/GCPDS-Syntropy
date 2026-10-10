@@ -43,7 +43,8 @@ class SigMFLoader:
         for metadata_path in metadata_files:
             with metadata_path.open(encoding="utf-8") as handle:
                 meta = json.load(handle)
-            datatype = meta.get("global", {}).get("datatype", "").lower()
+            global_metadata = meta.get("global", {})
+            datatype = global_metadata.get("core:datatype", global_metadata.get("datatype", "")).lower()
             if datatype != "ci8_le":
                 raise ValueError(f"{metadata_path.name} has unsupported datatype {datatype!r}; expected ci8_le")
             data_path = metadata_path.with_name(metadata_path.name.removesuffix("-meta") + "-data")
@@ -54,7 +55,7 @@ class SigMFLoader:
             if raw.size % 2:
                 raise ValueError(f"Odd number of int8 values in {data_path.name}")
             iq = raw.reshape(-1, 2).astype(np.float32)
-            capture_entries = meta.get("captures") or [{"sample_start": 0}]
+            capture_entries = meta.get("captures") or [{"core:sample_start": 0}]
             for index, capture in enumerate(capture_entries):
                 if capture_limit is not None and len(captures) >= capture_limit:
                     windows_truncated = True
@@ -62,8 +63,12 @@ class SigMFLoader:
                 if self.config.max_windows is not None and len(fm_windows) >= self.config.max_windows:
                     windows_truncated = True
                     break
-                start = int(capture.get("sample_start", 0))
-                end = int(capture_entries[index + 1].get("sample_start", iq.shape[0]) if index + 1 < len(capture_entries) else iq.shape[0])
+                # SigMF stores capture fields with the ``core:`` namespace.
+                # Keep the unqualified spelling as a compatibility fallback for
+                # the small legacy fixtures used by earlier callers.
+                start = int(capture.get("core:sample_start", capture.get("sample_start", 0)))
+                next_capture = capture_entries[index + 1] if index + 1 < len(capture_entries) else {}
+                end = int(next_capture.get("core:sample_start", next_capture.get("sample_start", iq.shape[0])))
                 remaining = None if self.config.max_windows is None else self.config.max_windows - len(fm_windows)
                 windows = self._window(iq[start:end], np, remaining)
                 fm_windows.extend(windows)
@@ -72,7 +77,7 @@ class SigMFLoader:
                     "capture_index": index,
                     "sample_start": start,
                     "sample_end": end,
-                    "frequency": capture.get("frequency"),
+                    "frequency": capture.get("core:frequency", capture.get("frequency")),
                     "window_count": len(windows),
                 })
             if windows_truncated:

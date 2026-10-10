@@ -65,26 +65,44 @@ construction and provenance in every report.
 ## Verification evidence
 
 - From `Sebatoga/`, `python3 -m compileall -q mcp_server tests`: passed.
-- From `Sebatoga/`, `python3 -m unittest discover -v`: passed with 3 dependency-aware skips
-  because NumPy and PyTorch are not installed in the current environment.
+- From `Sebatoga/`, `python3 -m pytest -q`: unavailable because `pytest` is
+  not installed.
+- Fallback `python3 -m unittest discover -v`: passed, 7 tests with 4
+  dependency-aware skips because NumPy and PyTorch are not installed.
 - From `Sebatoga/`, `python3 -m mcp_server.server`: returned the documented exit code 2 and
   actionable MCP installation message because the MCP SDK is not installed.
-- Full training and live MCP client harness remain pending until optional
-  dependencies are available.
+- The real SigMF metadata correction is now covered by a focused fixture using
+  `global.core:datatype`, `captures[].core:sample_start`, and
+  `captures[].core:frequency`; the external database was not copied into the
+  repository.
+- Runtime dependencies were installed in the ignored `Sebatoga/.venv/` using
+  CPU-only PyTorch. The external database remained outside the repository.
 
-## Final verification evidence
+## Current verification evidence
 
-- Work-unit commit: `b0ba2d7` (`feat(m1): expose configurable CNN training over MCP`).
-- From `Sebatoga/`, `python3 -m unittest discover -v`: passed, 6 tests with 3 expected skips.
-- From `Sebatoga/`, `python3 -m compileall -q mcp_server tests`: passed.
-- From `Sebatoga/`, `python3 -m mcp_server.server`: correctly returned exit code 2 with an
-  actionable MCP installation message.
 - `python3 -c "import numpy, matplotlib, scipy; print('Core packages OK')"`:
-  unavailable because the environment lacks NumPy.
-- Live training and a real MCP client harness are pending dependency setup;
-  they were not represented as passing checks.
+  unavailable because NumPy is not installed.
+- The focused fixture covers the real SigMF keys and asserts the model input
+  shape `(N, 2, L)`; the external database was not copied into the repository.
+- For the real-data smoke test, set `SYNTROPY_DATASET_PATH` to the external
+  database, configure a bounded `max_windows`, and exercise the MCP workflow;
+  record the command output and final report only after that execution.
+- From `Sebatoga/`, `.venv/bin/python -m pytest -q`: passed, 7 tests.
+- From `Sebatoga/`, `.venv/bin/python -m compileall -q mcp_server tests`: passed.
+- From `Sebatoga/`, `.venv/bin/python -c "import numpy, matplotlib, scipy; print('Core packages OK')"`:
+  passed.
+- Direct real-data training completed on CPU with `max_windows=512`, 3 epochs,
+  batch size 64, and 778 model parameters. The report was saved to
+  `/tmp/syntropy-training-report.json` with `stop_reason: completed`; train
+  accuracy was `0.990228`, validation accuracy `1.0`, and test accuracy `1.0`.
+- Live MCP stdio harness completed with 10 tools discovered, configured the
+  external dataset, trained one epoch with 64 windows, retrieved the final
+  report, and saved it to `/tmp/syntropy-mcp-training-report.json`.
+- The MCP harness report recorded `stop_reason: completed`, CPU execution,
+  778 parameters, and capture provenance including 98 MHz frequency.
 
 ## Current next step
 
-Feature implementation is complete for this branch. `feature/Sebatoga` is
-published on `origin`; merge/PR approval remains with the user.
+The SigMF key-format blocker is resolved locally on `feature/Sebatoga`, and
+bounded real-data training plus the live MCP harness have completed. The
+changes and evidence still need a work-unit commit and remote publication.
