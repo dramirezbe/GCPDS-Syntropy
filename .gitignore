@@ -6,5 +6,6 @@ lancedb/
 # ruff
 .ruff_cache/
 
-# db 
+# db
 DataBase-RF-FM-88MHz-108MHz-Bogota-Funza/
+DataBase-IQ-FM-88MHz-108MHz/

@@ -40,6 +40,45 @@ The harness extends to data pipeline validation and streaming. The LLM can verif
 
 ---
 
+# Dataset
+
+**DataBase-IQ-FM-88MHz-108MHz** — real HackRF One captures of the commercial FM band in Bogota.
+
+| Field | Value |
+|-------|-------|
+| Format | SigMF (`ci8_le` — interleaved int8 I/Q) |
+| Sample rate | 20 MS/s |
+| Center frequency | 98 MHz |
+| Bandwidth | 20 MHz (covers 88–108 MHz) |
+| Captures | 30 independent sessions, same gain config |
+| Samples per capture | 26,214,400 (~1.31 seconds) |
+| File size | 50 MiB per `.sigmf-data` |
+| Gain | LNA 16 dB, VGA 16 dB, AMP disabled |
+| Metadata | SigMF JSON (sample rate, frequency, gain, trace length) |
+
+Repository: `https://github.com/dramirezbe/DataBase-IQ-FM-88MHz-108MHz`
+
+**Why this dataset for M2:** RadioML is pre-windowed — it teaches the DataLoader API, not the pipeline problem. These HackRF captures are continuous IQ at 20 MS/s: real chunk boundaries, real filter state, real buffering pressure. 30 independent sessions provide honest split-by-session validation. The students face the actual problem they'll have on the Pi with the RTL-SDR.
+
+**Loading a capture:**
+
+```python
+import json, numpy as np
+
+with open("01_98MHz_20Ms_L16dB_G16dB_NoAmp.sigmf-meta") as f:
+    meta = json.load(f)
+
+sr = meta["global"]["core:sample_rate"]           # 20_000_000
+fc = meta["captures"][0]["core:frequency"]         # 98_000_000
+n_samples = meta["global"]["hackrf:trace_length_samples"]  # 26_214_400
+
+raw = np.fromfile("01_98MHz_20Ms_L16dB_G16dB_NoAmp.sigmf-data", dtype=np.int8)
+iq = raw.reshape(-1, 2).astype(np.float32)  # shape: (26214400, 2) — [I, Q] per row
+# To course convention (N, 2, 128): window with stride
+```
+
+---
+
 # Class Plan — M2: IQ Pipelines and Streaming (1 hour)
 
 ## Motivation: Why This Matters
@@ -62,17 +101,21 @@ Every stage in the pipeline has a contract: what shape comes in, what shape goes
 
 **Live demonstration (instructor drives, students follow):**
 
-1. Load the RadioML NPZ. Verify `X.shape == (N, 2, 128)`. Ask: which axis is I? Which is Q? How do you know — from the shape, or from the documentation?
+Use the HackRF FM dataset (`DataBase-IQ-FM-88MHz-108MHz`). Load capture `01_98MHz_20Ms_L16dB_G16dB_NoAmp`.
 
-2. Show a deliberate axis swap `X[:, [1, 0], :]` and plot constellations before/after. For most modulations this looks subtly different — for some (like BPSK) it looks identical. Ask: would your M1 model catch this? (Answer: probably not, accuracy might barely change, but phase-dependent modulations like QAM will degrade at high SNR.)
+1. **From raw bytes to IQ tensors.** Load the `ci8_le` binary: `np.fromfile(..., dtype=np.int8).reshape(-1, 2)`. That gives `(26214400, 2)` — 26M samples, each with I and Q. Ask: which column is I? Which is Q? How do you know — from the SigMF spec (`ci8_le` = complex int8, I first), not from the shape. Show the PSD to confirm: FM stations visible at known frequencies within 88–108 MHz.
 
-3. **Normalization trap.** Show two normalizations:
-   - Per-window joint power: `p = mean(sum(x², axis=I/Q))` → divide by `sqrt(p)`. Correct.
-   - Dataset-wide statistics: `mean = X_train.mean(axis=0); std = X_train.std(axis=0)` → standardize. **Wrong** — it leaks training statistics into validation, destroys received power information, and normalizes I and Q with different scales.
+2. **Windowing into course convention.** Slice the continuous stream into `(N, 2, 128)` tensors. With 26M samples and window size 128, you get ~204,800 windows. Ask: what hop size? Hop 128 (no overlap) vs. hop 64 (50% overlap) — the second doubles your data but introduces correlated windows. Show a deliberate axis swap `windows[:, [1, 0], :]` and plot the PSD before/after — the spectrum mirrors around DC. A model trained on the wrong axis order learns a mirrored frequency representation.
+
+3. **Normalization trap.** Show two normalizations on the HackRF windows:
+   - Per-window joint power: `p = mean(sum(x², axis=I/Q))` → divide by `sqrt(p)`. Correct — each window is self-contained.
+   - Dataset-wide statistics: `mean = X_train.mean(axis=0); std = X_train.std(axis=0)` → standardize. **Wrong** — it leaks training statistics into validation, destroys received power information (which matters for signal detection), and normalizes I and Q with different scales.
 
    Ask: why does the second one give you *better* validation accuracy? (Answer: because it's cheating — validation data was implicitly informed by training distribution.)
 
-4. **Split leakage.** Show what happens when you window a continuous recording first, then split windows into train/val/test randomly. Adjacent windows from the same transmission share channel state — they're not independent. The model memorizes channel fingerprints, not modulation.
+4. **Split leakage.** With 30 HackRF captures, show two splitting strategies:
+   - **Wrong**: window all 30 captures into one pool, then split windows randomly. Adjacent windows from the same capture share channel state, gain, and propagation conditions — they're not independent. The model memorizes capture fingerprints, not signal features.
+   - **Correct**: split by capture session first (e.g., captures 1–20 train, 21–25 val, 26–30 test), then window within each split. No window from a test capture ever appears in training.
 
 ### Key takeaway
 Validate IQ order, shape, labels, sample-rate, and normalization *before* any experiment. The harness `pipeline.validate` tool automates these checks — but the student must know what each check catches and why.
@@ -104,7 +147,7 @@ Every augmentation bound must be justified by physics. The harness `augmentation
 
 ### Concept: From Finite Dataset to Continuous Stream
 
-On the Pi, the RTL-SDR delivers a continuous stream of IQ samples. The pipeline must:
+On the Pi, the RTL-SDR delivers a continuous stream of IQ samples — exactly like these HackRF captures but at a different sample rate. The pipeline must:
 - Select a channel (tune, filter, resample)
 - Assemble fixed-length windows from a continuous stream
 - Buffer windows for inference (which is slower than acquisition)
@@ -120,9 +163,9 @@ On the Pi, the RTL-SDR delivers a continuous stream of IQ samples. The pipeline 
 
 4. **Metadata before windowing.** Record session start time, sample rate, center frequency, gain, and source identity *before* you start windowing. Once samples are in the ring buffer, you've lost the acquisition context unless you tagged it first.
 
-**Live sketch (or pre-recorded demo):**
+**Live sketch (or pre-recorded demo) using HackRF capture:**
 
-Show a replay pipeline that reads a recorded IQ file in variable-sized chunks (64, 128, 256, 512 samples) and assembles 128-sample windows. Verify that the output windows are identical regardless of chunk size. This is the M2.3 pass criterion.
+Read `01_98MHz_20Ms_L16dB_G16dB_NoAmp.sigmf-data` in variable-sized chunks (64, 128, 256, 512 samples) and assemble 128-sample windows. With 26M samples at 20 MS/s, even the smallest chunk size produces thousands of boundary crossings — real stress testing. Verify that the output windows are identical regardless of chunk size. This is the M2.3 pass criterion.
 
 ### Key takeaway
 Acquisition and inference are independent systems connected by a bounded queue. The harness `streaming.status` tool monitors queue depth and drops — but the student must understand *why* equivalent chunk sizes must produce equivalent windows.
@@ -141,15 +184,16 @@ Acquisition and inference are independent systems connected by a bounded queue. 
 # Student Task — M2: IQ Pipeline and Streaming Harness
 
 ## Objective
-Extend the M1 MCP harness with pipeline validation, augmentation, and streaming capabilities. The LLM must be able to verify data integrity, configure augmentations, and monitor a streaming pipeline through the harness.
+Extend the M1 MCP harness with pipeline validation, augmentation, and streaming capabilities using the **DataBase-IQ-FM-88MHz-108MHz** HackRF captures (30 SigMF recordings, 20 MS/s `ci8_le`, 98 MHz center, ~26M samples each). The LLM must be able to verify data integrity, configure augmentations, and monitor a streaming pipeline through the harness.
 
 ## Deliverables
 
 ### D1 — Pipeline Validation (M2.1)
 Implement harness tools that allow the LLM to:
-- Validate IQ tensor layout (`N, 2, 128`), dtype, label mapping, and sample-rate assumptions.
+- Load any HackRF SigMF capture pair (`.sigmf-data` + `.sigmf-meta`), parse metadata (sample rate, center frequency, gain, trace length), and convert `ci8_le` to IQ tensors in course convention `(N, 2, 128)`.
+- Validate IQ tensor layout, dtype, and sample-rate assumptions against the SigMF metadata.
 - Run per-window joint-power normalization and verify it uses the current window only — not dataset statistics.
-- Detect split leakage: given train/val/test indices, verify no overlapping windows from the same continuous segment cross splits.
+- Detect split leakage: given a split-by-session assignment (e.g., captures 1–20 train, 21–25 val, 26–30 test), verify no windows from test sessions appear in training.
 - Compare baseline vs. optimized DataLoader: measure throughput (batches/s) and peak memory, with equivalent data and preprocessing semantics.
 
 **Artifact:** Structured report (JSON) with all validation results, consumable by the LLM.
@@ -168,10 +212,10 @@ Implement harness tools that allow the LLM to:
 
 ### D3 — Streaming Pipeline (M2.3)
 Implement harness tools that allow the LLM to:
-- Start a replay pipeline that reads a recorded IQ file in configurable chunk sizes and assembles 128-sample windows with configurable hop.
+- Start a replay pipeline that reads a HackRF `.sigmf-data` file in configurable chunk sizes and assembles 128-sample windows with configurable hop. Each capture has 26M samples at 20 MS/s — enough to stress-test every boundary condition.
 - Monitor queue depth, drop count, and filter state in real time.
-- Run a replay comparison: process the same file with chunk sizes 64, 128, 256, 512 and verify output windows are identical.
-- Record session metadata (sample rate, center frequency, source identity) before windowing begins.
+- Run a replay comparison: process the same capture with chunk sizes 64, 128, 256, 512 and verify output windows are identical.
+- Record session metadata from the SigMF `.sigmf-meta` (sample rate, center frequency, gain, source identity) before windowing begins.
 
 **Artifact:** Ring-buffer implementation, queue/drop logs, and replay comparison report showing window equivalence across chunk sizes.
 
