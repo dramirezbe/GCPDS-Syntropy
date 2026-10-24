@@ -70,13 +70,19 @@ class TuiControlsTest(unittest.TestCase):
             self.assertFalse(resolution.bootstrap)
 
     def test_bootstrap_checkpoint_is_temporary_and_cleaned(self):
-        resolution = tui.resolve_checkpoint(None, 8)
-        try:
-            self.assertTrue(resolution.bootstrap)
-            self.assertTrue(resolution.path.is_file())
-        finally:
-            resolution.cleanup()
-        self.assertFalse(resolution.path.exists())
+        with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, {"SYNTROPY_CHECKPOINT": ""}):
+            previous = Path.cwd()
+            os.chdir(directory)
+            try:
+                resolution = tui.resolve_checkpoint(None, 8)
+                try:
+                    self.assertTrue(resolution.bootstrap)
+                    self.assertTrue(resolution.path.is_file())
+                finally:
+                    resolution.cleanup()
+                self.assertFalse(resolution.path.exists())
+            finally:
+                os.chdir(previous)
 
     def test_non_terminal_lifecycle_stops_in_finally(self):
         config = {"checkpoint_path": "m.pt", "source": "injection", "window_length": 4,
