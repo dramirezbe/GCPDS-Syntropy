@@ -12,6 +12,7 @@ from typing import Any
 from .config import CNNConfig, DatasetConfig, TrainingConfig
 from .dataset import SigMFLoader
 from .training import TrainingService
+from .realtime import RealtimePipeline
 
 try:  # MCP SDK 1.x; retain fallbacks for newer/re-exported APIs.
     from mcp.server.fastmcp import FastMCP
@@ -44,6 +45,7 @@ mcp = FastMCP("syntropy-cnn") if MCP_AVAILABLE else _LocalServer()
 _dataset = DatasetConfig()
 _training = TrainingConfig()
 _service = TrainingService()
+_realtime = RealtimePipeline()
 
 
 def _ok(data: dict[str, Any]) -> dict[str, Any]:
@@ -181,6 +183,71 @@ def save_final_report(path: str) -> dict[str, Any]:
     try:
         destination = _service.save_report(path)
         return _ok({"path": str(destination)})
+    except Exception as exc:
+        return _error(exc)
+
+
+@mcp.tool()
+def configure_pipeline(checkpoint_path: str, source: str = "injection", sigmf_meta_path: str | None = None,
+                       window_length: int = 1024, stride: int | None = None, chunk_size: int = 1024,
+                       buffer_capacity: int = 8, overflow_policy: str = "block") -> dict[str, Any]:
+    """Configure the singleton raw-IQ realtime pipeline without starting it."""
+    try:
+        values = {"checkpoint_path": checkpoint_path, "source": source, "sigmf_meta_path": sigmf_meta_path,
+                  "window_length": window_length, "stride": stride or window_length, "chunk_size": chunk_size,
+                  "buffer_capacity": buffer_capacity, "overflow_policy": overflow_policy}
+        return _ok({"status": _realtime.configure(**values)})
+    except Exception as exc:
+        return _error(exc)
+
+
+@mcp.tool()
+def start_realtime_pipeline() -> dict[str, Any]:
+    """Start source, DSP, and inference workers."""
+    try:
+        return _ok({"status": _realtime.start()})
+    except Exception as exc:
+        return _error(exc)
+
+
+@mcp.tool()
+def inject_iq(samples: list[list[float]], sample_start: int = 0) -> dict[str, Any]:
+    """Inject deterministic I/Q pairs represented as [[i, q], ...]."""
+    try:
+        return _ok(_realtime.inject(samples, sample_start))
+    except Exception as exc:
+        return _error(exc)
+
+
+@mcp.tool()
+def get_pipeline_status() -> dict[str, Any]:
+    try:
+        return _ok({"status": _realtime.status()})
+    except Exception as exc:
+        return _error(exc)
+
+
+@mcp.tool()
+def get_pipeline_metrics() -> dict[str, Any]:
+    try:
+        return _ok({"metrics": _realtime.metrics()})
+    except Exception as exc:
+        return _error(exc)
+
+
+@mcp.tool()
+def get_predictions(limit: int = 20) -> dict[str, Any]:
+    try:
+        return _ok({"predictions": _realtime.predictions(limit)})
+    except Exception as exc:
+        return _error(exc)
+
+
+@mcp.tool()
+def stop_realtime_pipeline() -> dict[str, Any]:
+    """Cancel all workers and wake blocked buffer operations."""
+    try:
+        return _ok({"status": _realtime.stop()})
     except Exception as exc:
         return _error(exc)
 

@@ -4,6 +4,16 @@ This package provides a reusable training core and an MCP stdio server. It
 loads SigMF `ci8_le` captures, creates deterministic `(N, 2, L)` `float32`
 windows, and trains a bounded configurable CNN in a background thread.
 
+It also exposes a bounded raw-IQ realtime path. `configure_pipeline` selects a
+checkpoint and either MCP injection or chunked SigMF replay; the workers then
+run DSP, windowing, and CNN inference without FM demodulation. The realtime
+tools are `start_realtime_pipeline`, `inject_iq`, `get_pipeline_status`,
+`get_pipeline_metrics`, `get_predictions`, and `stop_realtime_pipeline`.
+Injection uses JSON-friendly `[[i, q], ...]` pairs. Predictions retain UTC
+timestamp, sample position, window length, binary label (`noise=0`, `fm=1`),
+confidence, and both class probabilities. Buffers are bounded; `block` is the
+default overflow policy and `drop_oldest` is available for live operation.
+
 The loader reads the standard SigMF names `global.core:datatype`,
 `captures[].core:sample_start`, and `captures[].core:frequency`. The older
 unqualified spellings remain accepted for compatibility with existing local
@@ -50,6 +60,15 @@ import.
 6. Poll `get_live_status` and `get_system_metrics`; call `stop_training` when
    cancellation is needed.
 7. Call `get_final_report`, then `save_final_report` with a local JSON path.
+
+### Realtime workflow
+
+1. Build or select a checkpoint compatible with the existing `build_cnn` CNN.
+2. Call `configure_pipeline` with `checkpoint_path`, `window_length`, and
+   either `source="injection"` or `source="sigmf"` plus `sigmf_meta_path`.
+3. Start the pipeline, inject I/Q pairs when using injection, and poll status,
+   metrics, and predictions.
+4. Call `stop_realtime_pipeline`; cancellation wakes blocked bounded buffers.
 
 Reports preserve capture provenance and label construction (`fm=1` from
 captures and seeded synthetic Gaussian noise=`0`), plus train, validation, and
