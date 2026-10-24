@@ -28,6 +28,8 @@ and synthetic `noise=0` model contract.
   metrics, and prediction retrieval through MCP.
 - [x] RCP-04: Add focused tests, end-to-end injection verification, update
   documentation, and publish a work-unit commit.
+- [x] RCP-05: Add a dependency-free terminal dashboard for live pipeline
+  status, metrics, buffers, and predictions with clean shutdown.
 
 ## Decisions
 
@@ -38,6 +40,8 @@ and synthetic `noise=0` model contract.
 - The existing binary CNN is reused; no future modulation classes are added.
 - Pipeline execution is one singleton service, consistent with the current MCP
   server architecture.
+- The visualization is a local terminal dashboard using the Python standard
+  library; it does not introduce a web UI or mandatory runtime dependency.
 
 ## Checks
 
@@ -66,6 +70,8 @@ and synthetic `noise=0` model contract.
   latest prediction timestamp.
 - Predictions include class, confidence, probabilities, and sample position.
 - Replay and injection paths are deterministic and covered by tests.
+- The dashboard can monitor injection or SigMF replay and always restores the
+  terminal after stop, quit, or keyboard interruption.
 
 ## Verification evidence
 
@@ -73,6 +79,11 @@ and synthetic `noise=0` model contract.
 - `.venv/bin/python -m compileall -q mcp_server tests`: passed.
 - End-to-end injection harness: passed with a temporary `build_cnn` checkpoint;
   predictions, terminal status, metrics, and cancellation were observed.
+- ANSI fallback harness: passed with a temporary compatible checkpoint and the
+  deterministic injection fixture; one window was inferred and cleanup ended
+  the pipeline in `cancelled` status.
 - `.venv/bin/python -c "import numpy, matplotlib, scipy; print('Core packages OK')"`:
   passed.
 - Local work-unit commit: `57d5b93` (`feat(m1): add realtime IQ CNN pipeline`).
+- TUI tests and checks: `.venv/bin/python -m pytest -q` passed (17 tests), and
+  `.venv/bin/python -m compileall -q mcp_server tests` passed.
