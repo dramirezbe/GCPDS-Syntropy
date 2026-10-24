@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Syntropy Realtime CNN</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main>
+    <header><div><p class="eyebrow">LOCAL PIPELINE</p><h1>Realtime CNN dashboard</h1></div><span id="state" class="badge">unknown</span></header>
+    <section id="error" class="notice" hidden></section>
+    <section class="controls card">
+      <button id="configure">Configure</button><button id="start">Start</button><button id="stop" class="danger">Stop</button><button id="fixture">Inject fixture</button>
+    </section>
+    <section class="grid">
+      <article class="card"><h2>Pipeline</h2><dl id="config"></dl></article>
+      <article class="card"><h2>Metrics</h2><div id="metrics" class="metrics"></div></article>
+    </section>
+    <section class="card"><h2>Recent predictions</h2><div class="table-wrap"><table><thead><tr><th>Time</th><th>Label</th><th>Confidence</th><th>Sample</th></tr></thead><tbody id="predictions"></tbody></table></div></section>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>

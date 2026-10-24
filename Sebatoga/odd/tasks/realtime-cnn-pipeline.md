@@ -32,6 +32,8 @@ and synthetic `noise=0` model contract.
   status, metrics, buffers, and predictions with clean shutdown.
 - [x] RCP-06: Provide safe initial parameters and a one-line dashboard startup
   path, including an explicit checkpoint fallback when none is supplied.
+- [x] RCP-07: Add a local browser dashboard with HTTP API, live metrics,
+  predictions, controls, and clean shutdown.
 
 ## Decisions
 
@@ -47,6 +49,9 @@ and synthetic `noise=0` model contract.
 - The zero-argument CLI uses injection mode, a bounded fixture, and documented
   defaults; a trained checkpoint is preferred and a temporary bootstrap model
   is used only when no checkpoint is supplied or found.
+- The browser dashboard uses only the Python standard library, binds to
+  localhost by default, and polls the existing singleton pipeline rather than
+  creating another pipeline instance.
 
 ## Checks
 
@@ -77,6 +82,8 @@ and synthetic `noise=0` model contract.
 - Replay and injection paths are deterministic and covered by tests.
 - The dashboard can monitor injection or SigMF replay and always restores the
   terminal after stop, quit, or keyboard interruption.
+- The browser dashboard exposes health, configuration, start/stop, injection,
+  status, metrics, and predictions through a local HTTP API.
 
 ## Verification evidence
 
@@ -96,3 +103,9 @@ and synthetic `noise=0` model contract.
   `Sebatoga/`, rendered one injected 1024-sample window using a temporary
   `bootstrap (random, untrained)` checkpoint, exited with code 0, and left no
   dashboard process running.
+- RCP-07 tests and checks: `.venv/bin/python -m pytest -q` passed (28 tests),
+  and `.venv/bin/python -m compileall -q mcp_server tests` passed.
+- Browser dashboard harness: started `mcp_server.web_server` on an ephemeral
+  localhost port with `checkpoints/epoch-001.pt`, queried `/api/health`, `/`,
+  and `/api/configure`, then sent SIGTERM; health was `ok: true`, index was
+  served, configure was `ok: true`, exit code was 0, and no process remained.
