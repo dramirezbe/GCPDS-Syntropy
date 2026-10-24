@@ -6,10 +6,11 @@ const api = async (path, options = {}) => {
   return data;
 };
 const post = (path, body = {}) => api(path, {method: 'POST', body: JSON.stringify(body)});
+const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (character) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[character]));
 
 function showError(message = '') { $('error').textContent = message; $('error').hidden = !message; }
 function renderConfig(config) {
-  $('config').innerHTML = Object.entries(config).map(([key, value]) => `<div><dt>${key.replaceAll('_', ' ')}</dt><dd>${value}</dd></div>`).join('');
+  $('config').innerHTML = Object.entries(config).map(([key, value]) => `<div><dt>${escapeHtml(key.replaceAll('_', ' '))}</dt><dd>${escapeHtml(value)}</dd></div>`).join('');
 }
 function renderMetrics(metrics) {
   const values = [['Samples', metrics.samples_received], ['Chunks', metrics.chunks_received], ['Windows', metrics.windows], ['Inferences', metrics.inferences], ['Throughput', `${(metrics.throughput_samples_per_second || 0).toFixed(2)} /s`], ['Latency', `${average(metrics.latencies_seconds).toFixed(4)} s`], ['Drops', metrics.drops], ['Buffers', bufferText(metrics.buffer)]];
@@ -18,7 +19,7 @@ function renderMetrics(metrics) {
 function average(values) { return values?.length ? values.reduce((a, b) => a + b, 0) / values.length : 0; }
 function bufferText(buffer) { return buffer ? `${buffer.raw?.depth || 0}/${buffer.raw?.capacity || 0} raw · ${buffer.processed?.depth || 0}/${buffer.processed?.capacity || 0} processed` : '0'; }
 function renderPredictions(items) {
-  $('predictions').innerHTML = items.slice().reverse().map(item => `<tr><td>${item.timestamp || '-'}</td><td>${item.label || '-'}</td><td>${Number(item.confidence || 0).toFixed(3)}</td><td>${item.sample_start ?? '-'}</td></tr>`).join('') || '<tr><td colspan="4">No predictions yet</td></tr>';
+  $('predictions').innerHTML = items.slice().reverse().map(item => `<tr><td>${escapeHtml(item.timestamp || '-')}</td><td>${escapeHtml(item.label || '-')}</td><td>${Number(item.confidence || 0).toFixed(3)}</td><td>${escapeHtml(item.sample_start ?? '-')}</td></tr>`).join('') || '<tr><td colspan="4">No predictions yet</td></tr>';
 }
 async function refresh() {
   try {
