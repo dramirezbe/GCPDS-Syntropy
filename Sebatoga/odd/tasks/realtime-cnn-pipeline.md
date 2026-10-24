@@ -30,6 +30,8 @@ and synthetic `noise=0` model contract.
   documentation, and publish a work-unit commit.
 - [x] RCP-05: Add a dependency-free terminal dashboard for live pipeline
   status, metrics, buffers, and predictions with clean shutdown.
+- [x] RCP-06: Provide safe initial parameters and a one-line dashboard startup
+  path, including an explicit checkpoint fallback when none is supplied.
 
 ## Decisions
 
@@ -42,6 +44,9 @@ and synthetic `noise=0` model contract.
   server architecture.
 - The visualization is a local terminal dashboard using the Python standard
   library; it does not introduce a web UI or mandatory runtime dependency.
+- The zero-argument CLI uses injection mode, a bounded fixture, and documented
+  defaults; a trained checkpoint is preferred and a temporary bootstrap model
+  is used only when no checkpoint is supplied or found.
 
 ## Checks
 
@@ -85,5 +90,9 @@ and synthetic `noise=0` model contract.
 - `.venv/bin/python -c "import numpy, matplotlib, scipy; print('Core packages OK')"`:
   passed.
 - Local work-unit commit: `57d5b93` (`feat(m1): add realtime IQ CNN pipeline`).
-- TUI tests and checks: `.venv/bin/python -m pytest -q` passed (17 tests), and
-  `.venv/bin/python -m compileall -q mcp_server tests` passed.
+- RCP-06 tests and checks: `.venv/bin/python -m pytest -q` passed (21 tests),
+  and `.venv/bin/python -m compileall -q mcp_server tests` passed.
+- Zero-argument harness: `.venv/bin/python -m mcp_server.tui` ran from
+  `Sebatoga/`, rendered one injected 1024-sample window using a temporary
+  `bootstrap (random, untrained)` checkpoint, exited with code 0, and left no
+  dashboard process running.

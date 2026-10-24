@@ -46,6 +46,23 @@ If the MCP SDK is unavailable, the module remains importable and the launch
 command prints an actionable installation message instead of failing during
 import.
 
+## One-line realtime dashboard
+
+From `Sebatoga/`, start the safe injection dashboard with:
+
+```bash
+python -m mcp_server.tui
+```
+
+The command uses injection, a deterministic fixture, a 1024-sample
+window/stride/chunk, buffer capacity 8, blocking overflow, and a one-second
+refresh. `--no-inject-fixture` disables the initial sample. Checkpoints are
+resolved from `SYNTROPY_CHECKPOINT`, then `checkpoints/epoch-001.pt`; when
+neither exists, the dashboard creates a temporary random, untrained bootstrap
+checkpoint and removes it on exit. The bootstrap is only for exercising the
+dashboard. Use `--checkpoint path/to/trained.pt` for useful inference; an
+explicit missing path fails clearly.
+
 ## MCP workflow
 
 1. Call `get_current_configuration`.

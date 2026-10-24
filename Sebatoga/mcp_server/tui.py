@@ -3,11 +3,18 @@
 from __future__ import annotations
 
 import argparse
+import os
 import sys
+import tempfile
 import time
+from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, TextIO
 
+from ._optional import require_torch
 from . import server
+from .config import CNNConfig
+from .model import build_cnn
 
 try:
     import curses
@@ -32,11 +39,12 @@ def render_dashboard(status: dict[str, Any], metrics: dict[str, Any],
         text = str(value)
         return text if len(text) <= width else text[: max(0, width - 3)] + "..."
 
+    checkpoint = "bootstrap (random, untrained)" if config.get("checkpoint_bootstrap") else config.get("checkpoint_path", "-")
     lines = [
         "Realtime CNN Dashboard",
         f"State: {state}"
         + (f" | Error: {status.get('error')}" if status.get("error") else ""),
-        f"Source: {config.get('source', '-')} | Checkpoint: {config.get('checkpoint_path', '-')}",
+        f"Source: {config.get('source', '-')} | Checkpoint: {checkpoint}",
         f"Window/stride/chunk: {config.get('window_length', '-')} / {config.get('stride', '-')} / {config.get('chunk_size', '-')}",
         f"Samples: {metrics.get('samples_received', 0)} | Chunks: {metrics.get('chunks_received', 0)} | Windows: {metrics.get('windows', 0)} | Inferences: {metrics.get('inferences', 0)}",
         f"Throughput: {metrics.get('throughput_samples_per_second', 0.0):.2f} samples/s | Latency: {_latency(metrics):.4f} s",
@@ -87,6 +95,49 @@ def injection_fixture(window_length: int) -> list[list[float]]:
     if window_length <= 0:
         raise ValueError("window_length must be positive")
     return [[1.0 if index % 2 == 0 else 0.5, -0.25] for index in range(window_length)]
+
+
+@dataclass
+class CheckpointResolution:
+    """Resolved checkpoint and ownership information for one dashboard run."""
+
+    path: Path
+    bootstrap: bool = False
+
+    def cleanup(self) -> None:
+        if self.bootstrap:
+            self.path.unlink(missing_ok=True)
+
+
+def _bootstrap_checkpoint(window_length: int) -> CheckpointResolution:
+    """Create an untrained compatible checkpoint outside the repository."""
+    if window_length <= 0:
+        raise ValueError("window_length must be positive")
+    torch = require_torch()
+    model = build_cnn(CNNConfig(), window_length)
+    handle = tempfile.NamedTemporaryFile(prefix="syntropy-bootstrap-", suffix=".pt", delete=False)
+    path = Path(handle.name)
+    handle.close()
+    try:
+        torch.save({"model": model.state_dict(), "bootstrap": True,
+                    "description": "random untrained bootstrap"}, path)
+    except Exception:
+        path.unlink(missing_ok=True)
+        raise
+    return CheckpointResolution(path, bootstrap=True)
+
+
+def resolve_checkpoint(explicit: str | None, window_length: int = 1024) -> CheckpointResolution:
+    """Resolve explicit, environment, repository, or temporary bootstrap checkpoint."""
+    if explicit:
+        path = Path(explicit).expanduser()
+        if not path.is_file():
+            raise FileNotFoundError(f"checkpoint not found: {path}")
+        return CheckpointResolution(path)
+    for candidate in (os.environ.get("SYNTROPY_CHECKPOINT"), "checkpoints/epoch-001.pt"):
+        if candidate and Path(candidate).expanduser().is_file():
+            return CheckpointResolution(Path(candidate).expanduser())
+    return _bootstrap_checkpoint(window_length)
 
 
 def _snapshot(config: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any], list[dict[str, Any]]]:
@@ -148,16 +199,22 @@ def run_dashboard(config: dict[str, Any], refresh: float = 1.0, *, fixture: bool
     input_stream = input_stream or sys.stdin
     output = output or sys.stdout
     try:
-        result = server.configure_pipeline(**config)
+        pipeline_config = {key: value for key, value in config.items() if key != "checkpoint_bootstrap"}
+        result = server.configure_pipeline(**pipeline_config)
         if not result.get("ok", True):
             raise RuntimeError(result.get("error", result))
         result = server.start_realtime_pipeline()
         if not result.get("ok", True):
             raise RuntimeError(result.get("error", result))
-        if fixture:
+        if fixture and config.get("source") == "injection":
             _inject(config)
             if not (output.isatty() and input_stream.isatty()):
-                time.sleep(min(max(refresh, 0.05), 1.0))
+                deadline = time.monotonic() + max(1.0, refresh * 2)
+                while time.monotonic() < deadline:
+                    status, metrics, _ = _snapshot(config)
+                    if metrics.get("windows", 0) or status.get("status") in {"failed", "completed"}:
+                        break
+                    time.sleep(0.05)
         if curses is not None and output.isatty() and input_stream.isatty():
             curses.wrapper(lambda stdscr: _curses_loop(stdscr, config, refresh))
         else:
@@ -171,7 +228,7 @@ def run_dashboard(config: dict[str, Any], refresh: float = 1.0, *, fixture: bool
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--checkpoint", required=True)
+    parser.add_argument("--checkpoint", help="trained checkpoint; defaults to env, repository checkpoint, or bootstrap")
     parser.add_argument("--source", choices=("injection", "sigmf"), default="injection")
     parser.add_argument("--sigmf-meta")
     parser.add_argument("--window-length", type=int, default=1024)
@@ -180,17 +237,23 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--buffer-capacity", type=int, default=8)
     parser.add_argument("--overflow-policy", choices=("block", "drop_oldest"), default="block")
     parser.add_argument("--refresh", type=float, default=1.0)
-    parser.add_argument("--inject-fixture", action="store_true")
+    parser.add_argument("--inject-fixture", action=argparse.BooleanOptionalAction, default=True,
+                        help="inject one deterministic window at startup (default: enabled)")
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    config = {"checkpoint_path": args.checkpoint, "source": args.source,
-              "sigmf_meta_path": args.sigmf_meta, "window_length": args.window_length,
-              "stride": args.stride or args.window_length, "chunk_size": args.chunk_size,
-              "buffer_capacity": args.buffer_capacity, "overflow_policy": args.overflow_policy}
-    run_dashboard(config, max(0.01, args.refresh), fixture=args.inject_fixture)
+    resolution = resolve_checkpoint(args.checkpoint, args.window_length)
+    config = {"checkpoint_path": str(resolution.path), "checkpoint_bootstrap": resolution.bootstrap,
+              "source": args.source, "sigmf_meta_path": args.sigmf_meta,
+              "window_length": args.window_length, "stride": args.stride or args.window_length,
+              "chunk_size": args.chunk_size, "buffer_capacity": args.buffer_capacity,
+              "overflow_policy": args.overflow_policy}
+    try:
+        run_dashboard(config, max(0.01, args.refresh), fixture=args.inject_fixture)
+    finally:
+        resolution.cleanup()
     return 0
 
 

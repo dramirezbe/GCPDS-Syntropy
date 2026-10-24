@@ -1,4 +1,7 @@
 import io
+import os
+from pathlib import Path
+import tempfile
 import unittest
 from unittest.mock import patch
 
@@ -25,6 +28,14 @@ class TuiRendererTest(unittest.TestCase):
 
 
 class TuiControlsTest(unittest.TestCase):
+    def test_parser_has_safe_zero_argument_defaults(self):
+        args = tui.build_parser().parse_args([])
+        self.assertEqual((args.source, args.window_length, args.stride, args.chunk_size),
+                         ("injection", 1024, None, 1024))
+        self.assertEqual((args.buffer_capacity, args.overflow_policy, args.refresh), (8, "block", 1.0))
+        self.assertTrue(args.inject_fixture)
+        self.assertFalse(tui.build_parser().parse_args(["--no-inject-fixture"]).inject_fixture)
+
     def test_key_mapping(self):
         self.assertEqual(tui.key_action("q"), "quit")
         self.assertEqual(tui.key_action(27), "quit")
@@ -44,6 +55,28 @@ class TuiControlsTest(unittest.TestCase):
     def test_fixture_is_deterministic_and_covers_window(self):
         self.assertEqual(tui.injection_fixture(4), tui.injection_fixture(4))
         self.assertEqual(len(tui.injection_fixture(4)), 4)
+
+    def test_explicit_missing_checkpoint_fails_clearly(self):
+        with self.assertRaisesRegex(FileNotFoundError, "checkpoint not found"):
+            tui.resolve_checkpoint("does-not-exist.pt", 8)
+
+    def test_checkpoint_resolution_prefers_environment(self):
+        with tempfile.TemporaryDirectory() as directory:
+            checkpoint = Path(directory) / "trained.pt"
+            checkpoint.touch()
+            with patch.dict(os.environ, {"SYNTROPY_CHECKPOINT": str(checkpoint)}):
+                resolution = tui.resolve_checkpoint(None, 8)
+            self.assertEqual(resolution.path, checkpoint)
+            self.assertFalse(resolution.bootstrap)
+
+    def test_bootstrap_checkpoint_is_temporary_and_cleaned(self):
+        resolution = tui.resolve_checkpoint(None, 8)
+        try:
+            self.assertTrue(resolution.bootstrap)
+            self.assertTrue(resolution.path.is_file())
+        finally:
+            resolution.cleanup()
+        self.assertFalse(resolution.path.exists())
 
     def test_non_terminal_lifecycle_stops_in_finally(self):
         config = {"checkpoint_path": "m.pt", "source": "injection", "window_length": 4,
