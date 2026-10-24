@@ -63,6 +63,21 @@ checkpoint and removes it on exit. The bootstrap is only for exercising the
 dashboard. Use `--checkpoint path/to/trained.pt` for useful inference; an
 explicit missing path fails clearly.
 
+## Browser dashboard
+
+Start the local web dashboard from `Sebatoga/`:
+
+```bash
+.venv/bin/python -m mcp_server.web_server
+```
+
+Then open <http://127.0.0.1:8765/>. It uses the same realtime pipeline as the
+MCP and terminal dashboards, polls status and metrics every second, and offers
+buttons to configure, start, stop, and inject a deterministic IQ fixture. Use
+`--checkpoint checkpoints/epoch-003.pt` for a trained model, or let the server
+create a temporary bootstrap model for a pipeline demonstration. Stop the
+server with `Ctrl-C`.
+
 ## MCP workflow
 
 1. Call `get_current_configuration`.
