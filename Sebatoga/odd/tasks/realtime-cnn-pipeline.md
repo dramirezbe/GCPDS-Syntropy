@@ -75,3 +75,4 @@ and synthetic `noise=0` model contract.
   predictions, terminal status, metrics, and cancellation were observed.
 - `.venv/bin/python -c "import numpy, matplotlib, scipy; print('Core packages OK')"`:
   passed.
+- Local work-unit commit: `57d5b93` (`feat(m1): add realtime IQ CNN pipeline`).
